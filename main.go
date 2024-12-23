@@ -24,6 +24,8 @@ func main() {
 	defer dbCon.Close()
 
 }
+
+func server() {
 	mux := http.NewServeMux()
 
 	server := &http.Server{
