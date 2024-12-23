@@ -4,7 +4,7 @@ CREATE TABLE bins (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     name TEXT NOT NULL UNIQUE,
-    parent_bin UUID,
+    parent_bin UUID DEFAULT NULL
 );
 
 -- +goose Down
