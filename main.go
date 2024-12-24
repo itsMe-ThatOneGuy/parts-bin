@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/config"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -22,9 +23,13 @@ func main() {
 		log.Fatalf("Error reading config file: %v", err)
 	}
 
-	dbURL := cfg.DBUrl
+	godotenv.Load(cfg.EVNPath)
+	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
-		log.Fatal("DB_URL must be set")
+		dbURL = cfg.DBUrl
+		if dbURL == "" || dbURL == config.DefaultDBurl {
+			log.Fatal("db_url not set in either .env or ~/.partsbinconfig.json")
+		}
 	}
 
 	dbCon, err := sql.Open("postgres", dbURL)
