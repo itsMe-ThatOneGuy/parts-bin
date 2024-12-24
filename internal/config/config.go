@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func read() (Config, error) {
+func Read() (Config, error) {
 	configPath, err := configFilePath()
 	if err != nil {
 		return Config{}, err
