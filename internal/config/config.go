@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 func read() (Config, error) {
@@ -27,3 +28,13 @@ func read() (Config, error) {
 	return config, nil
 }
 
+func configFilePath() (string, error) {
+	dir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	configPath := filepath.Join(dir, ConfigFile)
+
+	return configPath, nil
+}
