@@ -11,8 +11,10 @@ import (
 )
 
 func main() {
-	godotenv.Load()
-	dbURL := os.Getenv("DB_URL")
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: cli <command> [args...]")
+		return
+	}
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
 	}
