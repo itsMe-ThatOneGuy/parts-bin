@@ -2,11 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/config"
 	_ "github.com/lib/pq"
 )
 
@@ -15,6 +16,13 @@ func main() {
 		fmt.Println("Usage: cli <command> [args...]")
 		return
 	}
+
+	cfg, err := config.Read()
+	if err != nil {
+		log.Fatalf("Error reading config file: %v", err)
+	}
+
+	dbURL := cfg.DBUrl
 	if dbURL == "" {
 		log.Fatal("DB_URL must be set")
 	}
