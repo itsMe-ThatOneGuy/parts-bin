@@ -7,12 +7,25 @@ import (
 )
 
 func Read() (Config, error) {
-	configPath, err := configFilePath()
+	configDirPath, err := configFilePath()
 	if err != nil {
 		return Config{}, err
 	}
 
-	file, err := os.Open(configPath)
+	err = os.MkdirAll(configDirPath, 0755)
+	if err != nil {
+		return Config{}, err
+	}
+
+	configFilePath := filepath.Join(configDirPath, ConfigFile)
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		err = os.WriteFile(configFilePath, []byte(DefaultConfig), 0644)
+		if err != nil {
+			return Config{}, err
+		}
+	}
+
+	file, err := os.Open(configFilePath)
 	if err != nil {
 		return Config{}, err
 	}
@@ -34,7 +47,7 @@ func configFilePath() (string, error) {
 		return "", err
 	}
 
-	configPath := filepath.Join(dir, ConfigFile)
+	configPath := filepath.Join(dir, ".config", "parts-bin")
 
 	return configPath, nil
 }
