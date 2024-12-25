@@ -27,9 +27,6 @@ func (s *State) InitDB() error {
 		if dbURL == "" || dbURL == config.DefaultDBurl {
 			return errors.New("db_url not set in either .env or ~/.partsbinconfig.json")
 		}
-		println(".config")
-	} else {
-		println(".env")
 	}
 
 	dbCon, err := sql.Open("postgres", s.Config.DBUrl)
