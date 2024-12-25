@@ -1,13 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/config"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -18,25 +17,20 @@ func main() {
 		return
 	}
 
-	cfg, err := config.Read()
+	state := &state.State{}
+
+	err := state.InitConfig()
 	if err != nil {
 		log.Fatalf("Error reading config file: %v", err)
 	}
 
-	godotenv.Load(cfg.EVNPath)
-	dbURL := os.Getenv("DB_URL")
-	if dbURL == "" {
-		dbURL = cfg.DBUrl
-		if dbURL == "" || dbURL == config.DefaultDBurl {
-			log.Fatal("db_url not set in either .env or ~/.partsbinconfig.json")
-		}
-	}
+	godotenv.Load(state.Config.EVNPath)
 
-	dbCon, err := sql.Open("postgres", dbURL)
+	err = state.InitDB()
 	if err != nil {
 		log.Fatalf("error connecting to db: %s", err)
 	}
-	defer dbCon.Close()
+	defer state.CloseDB()
 
 }
 
