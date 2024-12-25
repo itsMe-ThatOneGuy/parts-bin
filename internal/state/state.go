@@ -5,8 +5,20 @@ import (
 	"errors"
 	"os"
 
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/config"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 )
+
+func (s *State) InitConfig() error {
+	cfg, err := config.Read()
+	if err != nil {
+		return err
+	}
+
+	s.Config = &cfg
+
+	return nil
+}
 
 func (s *State) InitDB() error {
 	dbURL := os.Getenv("DB_URL")
