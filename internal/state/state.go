@@ -29,7 +29,7 @@ func (s *State) InitDB() error {
 		}
 	}
 
-	dbCon, err := sql.Open("postgres", s.Config.DBUrl)
+	dbCon, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		return err
 	}
