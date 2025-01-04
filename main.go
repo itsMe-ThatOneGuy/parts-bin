@@ -19,6 +19,9 @@ func main() {
 		return
 	}
 
+	command := os.Args[1]
+	args := os.Args[2:]
+
 	state := &state.State{}
 
 	err := state.InitConfig()
