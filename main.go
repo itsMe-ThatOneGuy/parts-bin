@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -32,6 +34,14 @@ func main() {
 	}
 	defer state.CloseDB()
 
+
+func CreateBin(s *state.State, args []string) (database.Bin, error) {
+	bin, err := s.DBQueries.CreateBin(context.Background(), args[0])
+	if err != nil {
+		return database.Bin{}, err
+	}
+
+	return bin, nil
 }
 
 func server() {
