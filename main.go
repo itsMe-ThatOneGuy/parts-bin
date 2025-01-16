@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/cmd/bins"
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -44,18 +42,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error creating bin: %v", err)
 		}
-		println(bin.Name)
+		fmt.Println(bin.Name)
 	}
 
-}
-
-func CreateBin(s *state.State, args []string) (database.Bin, error) {
-	bin, err := s.DBQueries.CreateBin(context.Background(), args[0])
-	if err != nil {
-		return database.Bin{}, err
-	}
-
-	return bin, nil
 }
 
 func server() {
