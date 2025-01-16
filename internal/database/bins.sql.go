@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createBin = `-- name: CreateBin :one
@@ -40,4 +42,40 @@ DELETE FROM bins
 func (q *Queries) DeleteAllBins(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, deleteAllBins)
 	return err
+}
+
+const getBinByID = `-- name: GetBinByID :one
+SELECT id, created_at, updated_at, name, parent_bin FROM bins
+WHERE id = $1
+`
+
+func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, getBinByID, id)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
+const getBinByName = `-- name: GetBinByName :one
+SELECT id, created_at, updated_at, name, parent_bin FROM bins
+WHERE name = $1
+`
+
+func (q *Queries) GetBinByName(ctx context.Context, name string) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, getBinByName, name)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
 }

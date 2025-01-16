@@ -10,3 +10,11 @@ RETURNING *;
 
 -- name: DeleteAllBins :exec
 DELETE FROM bins;
+
+-- name: GetBinByID :one
+SELECT * FROM bins
+WHERE id = $1;
+
+-- name: GetBinByName :one
+SELECT * FROM bins
+WHERE name = $1;
