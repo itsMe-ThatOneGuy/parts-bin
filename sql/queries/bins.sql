@@ -18,3 +18,13 @@ WHERE id = $1;
 -- name: GetBinByName :one
 SELECT * FROM bins
 WHERE name = $1;
+
+-- name: DeleteBinByID :one
+DELETE FROM bins
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteBinByName :one
+DELETE FROM bins
+WHERE name = $1
+RETURNING *;

@@ -44,6 +44,44 @@ func (q *Queries) DeleteAllBins(ctx context.Context) error {
 	return err
 }
 
+const deleteBinByID = `-- name: DeleteBinByID :one
+DELETE FROM bins
+WHERE id = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+func (q *Queries) DeleteBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, deleteBinByID, id)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
+const deleteBinByName = `-- name: DeleteBinByName :one
+DELETE FROM bins
+WHERE name = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+func (q *Queries) DeleteBinByName(ctx context.Context, name string) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, deleteBinByName, name)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
 const getBinByID = `-- name: GetBinByID :one
 SELECT id, created_at, updated_at, name, parent_bin FROM bins
 WHERE id = $1
