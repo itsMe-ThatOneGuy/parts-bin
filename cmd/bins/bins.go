@@ -45,3 +45,33 @@ func GetBin(s *state.State, args []string) (database.Bin, error) {
 
 	return database.Bin{}, errors.New("Required argument flag not provided")
 }
+
+func DeleteBin(s *state.State, args []string) (database.Bin, error) {
+	argType := args[0]
+	argInput := args[1]
+
+	if argType == "-i" {
+		argInput, err := uuid.Parse(argInput)
+		if err != nil {
+			return database.Bin{}, errors.New("Issue parsing UUID")
+		}
+
+		bin, err := s.DBQueries.DeleteBinByID(context.Background(), argInput)
+		if err != nil {
+			return database.Bin{}, errors.New("Issue deleting bin using id")
+		}
+
+		return bin, nil
+	}
+
+	if argType == "-n" {
+		bin, err := s.DBQueries.DeleteBinByName(context.Background(), argInput)
+		if err != nil {
+			return database.Bin{}, errors.New("Issue deleting bin using name")
+		}
+
+		return bin, nil
+	}
+
+	return database.Bin{}, errors.New("Required argument flag not provided")
+}
