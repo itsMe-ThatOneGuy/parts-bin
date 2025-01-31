@@ -28,3 +28,13 @@ RETURNING *;
 DELETE FROM bins
 WHERE name = $1
 RETURNING *;
+
+-- name: UpdateBinNameByID :one
+UPDATE bins SET name = $2
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateBinNameByName :one
+UPDATE bins SET name = $2
+WHERE name = $1
+RETURNING *;

@@ -117,3 +117,51 @@ func (q *Queries) GetBinByName(ctx context.Context, name string) (Bin, error) {
 	)
 	return i, err
 }
+
+const updateBinNameByID = `-- name: UpdateBinNameByID :one
+UPDATE bins SET name = $2
+WHERE id = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+type UpdateBinNameByIDParams struct {
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinNameByID, arg.ID, arg.Name)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
+const updateBinNameByName = `-- name: UpdateBinNameByName :one
+UPDATE bins SET name = $2
+WHERE name = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+type UpdateBinNameByNameParams struct {
+	Name   string
+	Name_2 string
+}
+
+func (q *Queries) UpdateBinNameByName(ctx context.Context, arg UpdateBinNameByNameParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinNameByName, arg.Name, arg.Name_2)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
