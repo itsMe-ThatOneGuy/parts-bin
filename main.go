@@ -49,6 +49,12 @@ func main() {
 			log.Fatalf("Error creating bin: %v", err)
 		}
 		fmt.Println(bin)
+	case "deleteBin":
+		bin, err := bins.GetBin(state, args)
+		if err != nil {
+			log.Fatalf("Error deleting bin: %v", err)
+		}
+		fmt.Println(bin)
 	}
 
 }
