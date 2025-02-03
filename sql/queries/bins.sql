@@ -1,10 +1,11 @@
 -- name: CreateBin :one
-INSERT INTO bins (id, created_at, updated_at, name)
+INSERT INTO bins (id, created_at, updated_at, name, parent_bin)
 VALUES (
     gen_random_uuid(),
     NOW(),
     NOW(),
-    $1
+    $1,
+    $2
 )
 RETURNING *;
 

@@ -12,18 +12,24 @@ import (
 )
 
 const createBin = `-- name: CreateBin :one
-INSERT INTO bins (id, created_at, updated_at, name)
+INSERT INTO bins (id, created_at, updated_at, name, parent_bin)
 VALUES (
     gen_random_uuid(),
     NOW(),
     NOW(),
-    $1
+    $1,
+    $2
 )
 RETURNING id, created_at, updated_at, name, parent_bin
 `
 
-func (q *Queries) CreateBin(ctx context.Context, name string) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, createBin, name)
+type CreateBinParams struct {
+	Name      string
+	ParentBin uuid.NullUUID
+}
+
+func (q *Queries) CreateBin(ctx context.Context, arg CreateBinParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, createBin, arg.Name, arg.ParentBin)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
