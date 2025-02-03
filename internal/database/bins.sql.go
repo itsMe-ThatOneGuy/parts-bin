@@ -125,7 +125,7 @@ func (q *Queries) GetBinByName(ctx context.Context, name string) (Bin, error) {
 }
 
 const updateBinNameByID = `-- name: UpdateBinNameByID :one
-UPDATE bins SET name = $2
+UPDATE bins SET name = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING id, created_at, updated_at, name, parent_bin
 `
@@ -149,7 +149,7 @@ func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDPa
 }
 
 const updateBinNameByName = `-- name: UpdateBinNameByName :one
-UPDATE bins SET name = $2
+UPDATE bins SET name = $2, updated_at = NOW()
 WHERE name = $1
 RETURNING id, created_at, updated_at, name, parent_bin
 `
@@ -161,6 +161,54 @@ type UpdateBinNameByNameParams struct {
 
 func (q *Queries) UpdateBinNameByName(ctx context.Context, arg UpdateBinNameByNameParams) (Bin, error) {
 	row := q.db.QueryRowContext(ctx, updateBinNameByName, arg.Name, arg.Name_2)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
+const updateBinParentByID = `-- name: UpdateBinParentByID :one
+UPDATE bins SET parent_bin = $2, updated_at = NOW()
+WHERE id = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+type UpdateBinParentByIDParams struct {
+	ID        uuid.UUID
+	ParentBin uuid.NullUUID
+}
+
+func (q *Queries) UpdateBinParentByID(ctx context.Context, arg UpdateBinParentByIDParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinParentByID, arg.ID, arg.ParentBin)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+	)
+	return i, err
+}
+
+const updateBinParentByName = `-- name: UpdateBinParentByName :one
+UPDATE bins SET parent_bin = $2, updated_at = NOW()
+WHERE name = $1
+RETURNING id, created_at, updated_at, name, parent_bin
+`
+
+type UpdateBinParentByNameParams struct {
+	Name      string
+	ParentBin uuid.NullUUID
+}
+
+func (q *Queries) UpdateBinParentByName(ctx context.Context, arg UpdateBinParentByNameParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinParentByName, arg.Name, arg.ParentBin)
 	var i Bin
 	err := row.Scan(
 		&i.ID,

@@ -31,11 +31,21 @@ WHERE name = $1
 RETURNING *;
 
 -- name: UpdateBinNameByID :one
-UPDATE bins SET name = $2
+UPDATE bins SET name = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING *;
 
 -- name: UpdateBinNameByName :one
-UPDATE bins SET name = $2
+UPDATE bins SET name = $2, updated_at = NOW()
+WHERE name = $1
+RETURNING *;
+
+-- name: UpdateBinParentByID :one
+UPDATE bins SET parent_bin = $2, updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateBinParentByName :one
+UPDATE bins SET parent_bin = $2, updated_at = NOW()
 WHERE name = $1
 RETURNING *;
