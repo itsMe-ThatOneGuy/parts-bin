@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/cmd/bins"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
@@ -19,10 +20,21 @@ func main() {
 	}
 
 	command := os.Args[1]
-	args := os.Args[2:]
+	input := os.Args[2:]
+
+	hasFlags := false
+	var flags []string
+	if strings.HasPrefix(input[0], "-") {
+		hasFlags = true
+		flags = strings.Split(input[0], "")[1:]
+	}
+
+	args := input
+	if hasFlags {
+		args = input[1:]
+	}
 
 	state := &state.State{}
-
 	err := state.InitConfig()
 	if err != nil {
 		log.Fatalf("Error reading config file: %v", err)
