@@ -3,6 +3,8 @@ package bins
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
@@ -38,7 +40,31 @@ func validateInputPath(s string) (last string, parent string, pathSlice []string
 	return _last, "", splitSlice
 }
 
+func CreateBin(s *state.State, args []string) (string, error) {
+	last, _, pathSlice := validateInputPath(args[0])
+	if len(pathSlice) > 1 {
+		for _, v := range pathSlice {
+			_, err := s.DBQueries.GetBinByName(context.TODO(), v)
+			if err != nil {
+				msg := fmt.Sprintf("mkbin: cannot create bin '%s': no such parent bin", v)
+				return "", errors.New(msg)
+			}
 		}
+	}
+
+	_, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
+		Name:      last,
+		ParentBin: uuid.NullUUID{Valid: false},
+	})
+	if err != nil {
+		msg := fmt.Sprintf("issue creating '%s' bin", last)
+		return "", errors.New(msg)
+	}
+
+	msg := fmt.Sprintf("bin '%s' created", last)
+	return msg, nil
+}
+
 
 		bin, err := s.DBQueries.GetBinByID(context.Background(), argInput)
 		if err != nil {
