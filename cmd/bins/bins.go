@@ -9,23 +9,35 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
-func CreateBin(s *state.State, args []string) (database.Bin, error) {
-	bin, err := s.DBQueries.CreateBin(context.Background(), args[0])
+func validateInputType(s string) (string, uuid.UUID) {
+	inputType := "UUID"
+	uuidTest, err := uuid.Parse(s)
 	if err != nil {
-		return database.Bin{}, errors.New("Issue creating new bin")
+		inputType = "string"
+		return inputType, uuid.Nil
 	}
 
-	return bin, nil
+	return inputType, uuidTest
 }
 
-func GetBin(s *state.State, args []string) (database.Bin, error) {
-	argType := args[0]
-	argInput := args[1]
+func validateInputPath(s string) (last string, parent string, pathSlice []string) {
+	splitSlice := strings.Split(s, "/")
+	if splitSlice[0] == "" {
+		splitSlice = splitSlice[1:]
+	}
 
-	if argType == "-i" {
-		argInput, err := uuid.Parse(argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue parsing UUID")
+	lastIndex := len(splitSlice) - 1
+	_last := splitSlice[lastIndex]
+
+	if len(splitSlice) > 1 {
+		parentIndex := lastIndex - 1
+		_parent := splitSlice[parentIndex]
+		return _last, _parent, splitSlice
+	}
+
+	return _last, "", splitSlice
+}
+
 		}
 
 		bin, err := s.DBQueries.GetBinByID(context.Background(), argInput)
