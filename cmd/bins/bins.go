@@ -40,38 +40,72 @@ func validateInputPath(s string) (last string, parent string, pathSlice []string
 	return _last, "", splitSlice
 }
 
-func CreateBin(s *state.State, args []string) (string, error) {
+func validateFlags(flags map[string]struct{}, key string) bool {
+	_, exists := flags[key]
+	return exists
+}
+
+func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
+	p, v := validateFlags(flags, "p"), validateFlags(flags, "v")
+
 	last, _, pathSlice := validateInputPath(args[0])
 	if len(pathSlice) > 1 {
-		for _, v := range pathSlice {
-			_, err := s.DBQueries.GetBinByName(context.TODO(), v)
+
+		parentID := uuid.NullUUID{Valid: false}
+		for _, e := range pathSlice {
+			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+				Name:      e,
+				ParentBin: parentID,
+			})
 			if err != nil {
-				msg := fmt.Sprintf("mkbin: cannot create bin '%s': no such parent bin", v)
-				return "", errors.New(msg)
+				if !p {
+					msg := fmt.Sprintf("mkbin: cannot create bin '%s': no such parent bin", e)
+					return errors.New(msg)
+				}
+
+				newBin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
+					Name:      e,
+					ParentBin: parentID,
+				})
+				if err != nil {
+					msg := fmt.Sprintf("issue creating '%s' bin: %v", e, err)
+					return errors.New(msg)
+				}
+
+				parentID = uuid.NullUUID{Valid: true, UUID: newBin.ID}
+
+				if v {
+					fmt.Printf("bin '%s' created\n", newBin.Name)
+				}
+
+			} else {
+				parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+
+				if v {
+					fmt.Printf("bin '%s' already created\n", bin.Name)
+				}
+
 			}
 		}
+
+		return nil
 	}
 
-	_, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
+	bin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
 		Name:      last,
 		ParentBin: uuid.NullUUID{Valid: false},
 	})
 	if err != nil {
-		msg := fmt.Sprintf("issue creating '%s' bin", last)
-		return "", errors.New(msg)
+		return err
 	}
 
-	msg := fmt.Sprintf("bin '%s' created", last)
-	return msg, nil
+	if v {
+		fmt.Printf("bin '%s' created\n", bin.Name)
+	}
+
+	return nil
 }
 
-
-		bin, err := s.DBQueries.GetBinByID(context.Background(), argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue getting bin using bin ID")
-		}
-		return bin, nil
-	}
 
 	if argType == "-n" {
 		bin, err := s.DBQueries.GetBinByName(context.Background(), argInput)
