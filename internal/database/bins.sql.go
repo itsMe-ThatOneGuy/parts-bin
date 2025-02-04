@@ -88,13 +88,19 @@ func (q *Queries) DeleteBinByName(ctx context.Context, name string) (Bin, error)
 	return i, err
 }
 
-const getBinByID = `-- name: GetBinByID :one
+const getBin = `-- name: GetBin :one
 SELECT id, created_at, updated_at, name, parent_bin FROM bins
-WHERE id = $1
+WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
 `
 
-func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBinByID, id)
+type GetBinParams struct {
+	Name      string
+	ParentBin uuid.NullUUID
+}
+
+func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentBin)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
@@ -106,13 +112,13 @@ func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
 	return i, err
 }
 
-const getBinByName = `-- name: GetBinByName :one
+const getBinByID = `-- name: GetBinByID :one
 SELECT id, created_at, updated_at, name, parent_bin FROM bins
-WHERE name = $1
+WHERE id = $1
 `
 
-func (q *Queries) GetBinByName(ctx context.Context, name string) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBinByName, name)
+func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, getBinByID, id)
 	var i Bin
 	err := row.Scan(
 		&i.ID,

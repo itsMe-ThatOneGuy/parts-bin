@@ -16,9 +16,10 @@ DELETE FROM bins;
 SELECT * FROM bins
 WHERE id = $1;
 
--- name: GetBinByName :one
+-- name: GetBin :one
 SELECT * FROM bins
-WHERE name = $1;
+WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2);
 
 -- name: DeleteBinByID :one
 DELETE FROM bins
