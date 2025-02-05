@@ -20,7 +20,7 @@ VALUES (
     $1,
     $2
 )
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 type CreateBinParams struct {
@@ -37,6 +37,7 @@ func (q *Queries) CreateBin(ctx context.Context, arg CreateBinParams) (Bin, erro
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
@@ -50,10 +51,36 @@ func (q *Queries) DeleteAllBins(ctx context.Context) error {
 	return err
 }
 
+const deleteBin = `-- name: DeleteBin :one
+DELETE FROM bins
+WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
+`
+
+type DeleteBinParams struct {
+	Name      string
+	ParentBin uuid.NullUUID
+}
+
+func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, deleteBin, arg.Name, arg.ParentBin)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.ParentBin,
+		&i.ParentBinOrNull,
+	)
+	return i, err
+}
+
 const deleteBinByID = `-- name: DeleteBinByID :one
 DELETE FROM bins
 WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 func (q *Queries) DeleteBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
@@ -65,31 +92,13 @@ func (q *Queries) DeleteBinByID(ctx context.Context, id uuid.UUID) (Bin, error) 
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
-	)
-	return i, err
-}
-
-const deleteBinByName = `-- name: DeleteBinByName :one
-DELETE FROM bins
-WHERE name = $1
-RETURNING id, created_at, updated_at, name, parent_bin
-`
-
-func (q *Queries) DeleteBinByName(ctx context.Context, name string) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, deleteBinByName, name)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
 
 const getBin = `-- name: GetBin :one
-SELECT id, created_at, updated_at, name, parent_bin FROM bins
+SELECT id, created_at, updated_at, name, parent_bin, parent_bin_or_null FROM bins
 WHERE name = $1
 AND (parent_bin IS NOT DISTINCT FROM $2)
 `
@@ -108,12 +117,13 @@ func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
 
 const getBinByID = `-- name: GetBinByID :one
-SELECT id, created_at, updated_at, name, parent_bin FROM bins
+SELECT id, created_at, updated_at, name, parent_bin, parent_bin_or_null FROM bins
 WHERE id = $1
 `
 
@@ -126,6 +136,7 @@ func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
@@ -133,7 +144,7 @@ func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
 const updateBinNameByID = `-- name: UpdateBinNameByID :one
 UPDATE bins SET name = $2, updated_at = NOW()
 WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 type UpdateBinNameByIDParams struct {
@@ -150,6 +161,7 @@ func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDPa
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
@@ -157,7 +169,7 @@ func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDPa
 const updateBinNameByName = `-- name: UpdateBinNameByName :one
 UPDATE bins SET name = $2, updated_at = NOW()
 WHERE name = $1
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 type UpdateBinNameByNameParams struct {
@@ -174,6 +186,7 @@ func (q *Queries) UpdateBinNameByName(ctx context.Context, arg UpdateBinNameByNa
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
@@ -181,7 +194,7 @@ func (q *Queries) UpdateBinNameByName(ctx context.Context, arg UpdateBinNameByNa
 const updateBinParentByID = `-- name: UpdateBinParentByID :one
 UPDATE bins SET parent_bin = $2, updated_at = NOW()
 WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 type UpdateBinParentByIDParams struct {
@@ -198,6 +211,7 @@ func (q *Queries) UpdateBinParentByID(ctx context.Context, arg UpdateBinParentBy
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }
@@ -205,7 +219,7 @@ func (q *Queries) UpdateBinParentByID(ctx context.Context, arg UpdateBinParentBy
 const updateBinParentByName = `-- name: UpdateBinParentByName :one
 UPDATE bins SET parent_bin = $2, updated_at = NOW()
 WHERE name = $1
-RETURNING id, created_at, updated_at, name, parent_bin
+RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
 type UpdateBinParentByNameParams struct {
@@ -222,6 +236,7 @@ func (q *Queries) UpdateBinParentByName(ctx context.Context, arg UpdateBinParent
 		&i.UpdatedAt,
 		&i.Name,
 		&i.ParentBin,
+		&i.ParentBinOrNull,
 	)
 	return i, err
 }

@@ -26,9 +26,10 @@ DELETE FROM bins
 WHERE id = $1
 RETURNING *;
 
--- name: DeleteBinByName :one
+-- name: DeleteBin :one
 DELETE FROM bins
 WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
 RETURNING *;
 
 -- name: UpdateBinNameByID :one
