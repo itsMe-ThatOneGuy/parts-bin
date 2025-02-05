@@ -114,38 +114,34 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 		}
 		return bin, nil
 	}
+func DeleteBin(s *state.State, args []string) error {
+	last, _, pathSlice := validateInputPath(args[0])
+	if len(pathSlice) > 1 {
 
-	return database.Bin{}, errors.New("Required argument flag not provided")
-}
-
-func DeleteBin(s *state.State, args []string) (database.Bin, error) {
-	argType := args[0]
-	argInput := args[1]
-
-	if argType == "-i" {
-		argInput, err := uuid.Parse(argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue parsing UUID")
+		parentID := uuid.NullUUID{Valid: false}
+		for _, e := range pathSlice {
+			_, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+				Name:      e,
+				ParentBin: parentID,
+			})
+			if err != nil {
+				return err
+			}
 		}
 
-		bin, err := s.DBQueries.DeleteBinByID(context.Background(), argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue deleting bin using id")
-		}
-
-		return bin, nil
 	}
 
-	if argType == "-n" {
-		bin, err := s.DBQueries.DeleteBinByName(context.Background(), argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue deleting bin using name")
-		}
-
-		return bin, nil
+	bin, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
+		Name:      last,
+		ParentBin: uuid.NullUUID{Valid: false},
+	})
+	if err != nil {
+		return err
 	}
 
-	return database.Bin{}, errors.New("Required argument flag not provided")
+	fmt.Printf("bin '%s' deleted\n", bin.Name)
+
+	return nil
 }
 
 func UpdateBin(s state.State, args []string) (database.Bin, error) {
