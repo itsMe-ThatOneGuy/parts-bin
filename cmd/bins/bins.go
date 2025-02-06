@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -106,32 +107,93 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
+func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
+	r, v := validateFlags(flags, "r"), validateFlags(flags, "v")
 
-	if argType == "-n" {
-		bin, err := s.DBQueries.GetBinByName(context.Background(), argInput)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue getting bin using bin Name")
-		}
-		return bin, nil
-	}
-func DeleteBin(s *state.State, args []string) error {
 	last, _, pathSlice := validateInputPath(args[0])
-	if len(pathSlice) > 1 {
+
+	if r {
+		pathCache := make(map[string]struct {
+			Name   string
+			ID     uuid.UUID
+			Parent uuid.NullUUID
+		})
 
 		parentID := uuid.NullUUID{Valid: false}
 		for _, e := range pathSlice {
-			_, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
 				Name:      e,
 				ParentBin: parentID,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("dbq1: %v", err)
 			}
+
+			pathCache[e] = struct {
+				Name   string
+				ID     uuid.UUID
+				Parent uuid.NullUUID
+			}{
+				Name:   e,
+				ID:     bin.ID,
+				Parent: parentID,
+			}
+
+			parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
 		}
 
+		slices.Reverse(pathSlice)
+		for i, e := range pathSlice {
+			bin := pathCache[e]
+
+			bins, err := s.DBQueries.GetBinsByParent(context.TODO(), uuid.NullUUID{
+				Valid: true,
+				UUID:  bin.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("dbq2: %v", err)
+			}
+
+			if len(bins) > 1 {
+				for _, e := range bins {
+					if v {
+						fmt.Printf("deleting '%s'\n", e.Name)
+					}
+
+					_, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
+						Name:      e.Name,
+						ParentBin: uuid.NullUUID{Valid: true, UUID: bin.ID},
+					})
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			if i != len(pathSlice)-1 {
+				if v {
+					fmt.Printf("deleting '%s'\n", bin.Name)
+				}
+
+				_, err = s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
+					Name:      bin.Name,
+					ParentBin: bin.Parent,
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+
+		return nil
 	}
 
-	bin, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
+	if v {
+		fmt.Printf("deleting '%s'\n", last)
+	}
+
+	_, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
 		Name:      last,
 		ParentBin: uuid.NullUUID{Valid: false},
 	})
@@ -139,54 +201,5 @@ func DeleteBin(s *state.State, args []string) error {
 		return err
 	}
 
-	fmt.Printf("bin '%s' deleted\n", bin.Name)
-
 	return nil
-}
-
-func UpdateBin(s state.State, args []string) (database.Bin, error) {
-	argType := args[0]
-	argBin := args[1]
-	argInputs := args[2:]
-
-	if argType == "-i" {
-		argBin, err := uuid.Parse(argBin)
-		if err != nil {
-			return database.Bin{}, errors.New("Issue parsing UUID")
-		}
-
-		if argInputs[0] == "-bn" {
-			bin, err := s.DBQueries.UpdateBinNameByID(context.Background(),
-				database.UpdateBinNameByIDParams{
-					ID:   argBin,
-					Name: argInputs[1],
-				},
-			)
-			if err != nil {
-				return database.Bin{}, errors.New("Issue renaming bin using id")
-			}
-
-			return bin, nil
-		}
-
-	}
-
-	if argType == "-n" {
-		if argInputs[0] == "-bn" {
-			bin, err := s.DBQueries.UpdateBinNameByName(context.Background(),
-				database.UpdateBinNameByNameParams{
-					Name:   argBin,
-					Name_2: argInputs[1],
-				},
-			)
-			if err != nil {
-				return database.Bin{}, errors.New("Issue renaming bin using name")
-			}
-
-			return bin, nil
-		}
-
-	}
-
-	return database.Bin{}, nil
 }
