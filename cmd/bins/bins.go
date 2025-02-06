@@ -203,3 +203,76 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 
 	return nil
 }
+
+func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
+	v := validateFlags(flags, "v")
+
+	_, _, sourceSlice := validateInputPath(args[0])
+	_, _, destinationSlice := validateInputPath(args[1])
+
+	sourceParentID := uuid.NullUUID{Valid: false}
+	lastBinInSource := database.Bin{}
+	for _, e := range sourceSlice {
+		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+			Name:      e,
+			ParentBin: sourceParentID,
+		})
+		if err != nil {
+			return fmt.Errorf("dbq1: %v", err)
+		}
+
+		sourceParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+
+		lastBinInSource = bin
+	}
+
+	destinationParentID := uuid.NullUUID{Valid: false}
+	for i, e := range destinationSlice {
+		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+			Name:      e,
+			ParentBin: destinationParentID,
+		})
+		if err != nil {
+			if i != len(destinationSlice)-1 {
+				return err
+			}
+
+			bin, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
+				Name:      lastBinInSource.Name,
+				ParentBin: destinationParentID,
+				Name_2:    e,
+			})
+			if err != nil {
+				return nil
+			}
+
+			lastBinInSource = bin
+
+			break
+		}
+
+		destinationParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+
+	}
+
+	err := s.DBQueries.UpdateBinParent(context.Background(), database.UpdateBinParentParams{
+		Name:        lastBinInSource.Name,
+		ParentBin:   lastBinInSource.ParentBin,
+		ParentBin_2: destinationParentID,
+	})
+	if err != nil {
+		return err
+	}
+
+	if v {
+		msg := fmt.Sprintf("renamed '%v' -> '%v'", args[0], args[1])
+		if len(args[1]) < len(args[0]) {
+			msg = fmt.Sprintf("renamed '%v' -> '%v/%v'", args[0], args[1], lastBinInSource.Name)
+		}
+
+		fmt.Println(msg)
+
+	}
+
+	return nil
+}
