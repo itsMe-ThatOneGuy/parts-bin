@@ -41,9 +41,10 @@ UPDATE bins SET name = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING *;
 
--- name: UpdateBinNameByName :one
-UPDATE bins SET name = $2, updated_at = NOW()
+-- name: UpdateBinName :one
+UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
 RETURNING *;
 
 -- name: UpdateBinParentByID :one
@@ -51,7 +52,7 @@ UPDATE bins SET parent_bin = $2, updated_at = NOW()
 WHERE id = $1
 RETURNING *;
 
--- name: UpdateBinParentByName :one
-UPDATE bins SET parent_bin = $2, updated_at = NOW()
+-- name: UpdateBinParent :exec
+UPDATE bins SET parent_bin = $3, updated_at = NOW()
 WHERE name = $1
-RETURNING *;
+AND (parent_bin IS NOT DISTINCT FROM $2);

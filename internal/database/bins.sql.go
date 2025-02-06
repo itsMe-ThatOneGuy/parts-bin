@@ -199,69 +199,21 @@ func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDPa
 	return i, err
 }
 
-const updateBinNameByName = `-- name: UpdateBinNameByName :one
-UPDATE bins SET name = $2, updated_at = NOW()
+const updateBinName = `-- name: UpdateBinName :one
+UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
 RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
 `
 
-type UpdateBinNameByNameParams struct {
-	Name   string
-	Name_2 string
-}
-
-func (q *Queries) UpdateBinNameByName(ctx context.Context, arg UpdateBinNameByNameParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinNameByName, arg.Name, arg.Name_2)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
-	)
-	return i, err
-}
-
-const updateBinParentByID = `-- name: UpdateBinParentByID :one
-UPDATE bins SET parent_bin = $2, updated_at = NOW()
-WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
-`
-
-type UpdateBinParentByIDParams struct {
-	ID        uuid.UUID
-	ParentBin uuid.NullUUID
-}
-
-func (q *Queries) UpdateBinParentByID(ctx context.Context, arg UpdateBinParentByIDParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinParentByID, arg.ID, arg.ParentBin)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
-	)
-	return i, err
-}
-
-const updateBinParentByName = `-- name: UpdateBinParentByName :one
-UPDATE bins SET parent_bin = $2, updated_at = NOW()
-WHERE name = $1
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
-`
-
-type UpdateBinParentByNameParams struct {
+type UpdateBinNameParams struct {
 	Name      string
 	ParentBin uuid.NullUUID
+	Name_2    string
 }
 
-func (q *Queries) UpdateBinParentByName(ctx context.Context, arg UpdateBinParentByNameParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinParentByName, arg.Name, arg.ParentBin)
+func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentBin, arg.Name_2)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
@@ -272,4 +224,21 @@ func (q *Queries) UpdateBinParentByName(ctx context.Context, arg UpdateBinParent
 		&i.ParentBinOrNull,
 	)
 	return i, err
+}
+
+const updateBinParent = `-- name: UpdateBinParent :exec
+UPDATE bins SET parent_bin = $3, updated_at = NOW()
+WHERE name = $1
+AND (parent_bin IS NOT DISTINCT FROM $2)
+`
+
+type UpdateBinParentParams struct {
+	Name        string
+	ParentBin   uuid.NullUUID
+	ParentBin_2 uuid.NullUUID
+}
+
+func (q *Queries) UpdateBinParent(ctx context.Context, arg UpdateBinParentParams) error {
+	_, err := q.db.ExecContext(ctx, updateBinParent, arg.Name, arg.ParentBin, arg.ParentBin_2)
+	return err
 }
