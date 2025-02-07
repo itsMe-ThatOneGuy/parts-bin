@@ -77,26 +77,6 @@ func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) (Bin, erro
 	return i, err
 }
 
-const deleteBinByID = `-- name: DeleteBinByID :one
-DELETE FROM bins
-WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
-`
-
-func (q *Queries) DeleteBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, deleteBinByID, id)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
-	)
-	return i, err
-}
-
 const getBin = `-- name: GetBin :one
 SELECT id, created_at, updated_at, name, parent_bin, parent_bin_or_null FROM bins
 WHERE name = $1
@@ -110,25 +90,6 @@ type GetBinParams struct {
 
 func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentBin)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
-	)
-	return i, err
-}
-
-const getBinByID = `-- name: GetBinByID :one
-SELECT id, created_at, updated_at, name, parent_bin, parent_bin_or_null FROM bins
-WHERE id = $1
-`
-
-func (q *Queries) GetBinByID(ctx context.Context, id uuid.UUID) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBinByID, id)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
@@ -172,31 +133,6 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) 
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateBinNameByID = `-- name: UpdateBinNameByID :one
-UPDATE bins SET name = $2, updated_at = NOW()
-WHERE id = $1
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
-`
-
-type UpdateBinNameByIDParams struct {
-	ID   uuid.UUID
-	Name string
-}
-
-func (q *Queries) UpdateBinNameByID(ctx context.Context, arg UpdateBinNameByIDParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinNameByID, arg.ID, arg.Name)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
-	)
-	return i, err
 }
 
 const updateBinName = `-- name: UpdateBinName :one
