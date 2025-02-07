@@ -276,3 +276,38 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 
 	return nil
 }
+
+func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
+	// Take a path and list the contents of the last index
+	_, _, sourceSlice := validateInputPath(args[0])
+
+	sourceParentID := uuid.NullUUID{Valid: false}
+	lastBinInSource := database.Bin{}
+	for _, e := range sourceSlice {
+		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+			Name:      e,
+			ParentBin: sourceParentID,
+		})
+		if err != nil {
+			return fmt.Errorf("dbq1: %v", err)
+		}
+
+		sourceParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+
+		lastBinInSource = bin
+	}
+
+	bins, err := s.DBQueries.GetBinsByParent(context.Background(), uuid.NullUUID{
+		Valid: true,
+		UUID:  lastBinInSource.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, e := range bins {
+		fmt.Println(e.Name)
+	}
+
+	return nil
+}
