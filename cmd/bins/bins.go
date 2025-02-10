@@ -12,17 +12,6 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
-func validateInputType(s string) (string, uuid.UUID) {
-	inputType := "UUID"
-	uuidTest, err := uuid.Parse(s)
-	if err != nil {
-		inputType = "string"
-		return inputType, uuid.Nil
-	}
-
-	return inputType, uuidTest
-}
-
 func parseInputPath(s string) (last string, parent string, pathSlice []string) {
 	splitSlice := strings.Split(s, "/")
 	if splitSlice[0] == "" {
