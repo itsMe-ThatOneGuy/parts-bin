@@ -5,40 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
 
-func parseInputPath(s string) (last string, parent string, pathSlice []string) {
-	splitSlice := strings.Split(s, "/")
-	if splitSlice[0] == "" {
-		splitSlice = splitSlice[1:]
-	}
-
-	lastIndex := len(splitSlice) - 1
-	_last := splitSlice[lastIndex]
-
-	if len(splitSlice) > 1 {
-		parentIndex := lastIndex - 1
-		_parent := splitSlice[parentIndex]
-		return _last, _parent, splitSlice
-	}
-
-	return _last, "", splitSlice
-}
-
-func validateFlags(flags map[string]struct{}, key string) bool {
-	_, exists := flags[key]
-	return exists
-}
-
 func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
-	p, v := validateFlags(flags, "p"), validateFlags(flags, "v")
+	p, v := utils.ValidateFlags(flags, "p"), utils.ValidateFlags(flags, "v")
 
-	last, _, pathSlice := parseInputPath(args[0])
+	last, _, pathSlice := utils.ParseInputPath(args[0])
 	if len(pathSlice) > 1 {
 
 		parentID := uuid.NullUUID{Valid: false}
@@ -97,9 +74,9 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
-	r, v := validateFlags(flags, "r"), validateFlags(flags, "v")
+	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
 
-	last, _, pathSlice := parseInputPath(args[0])
+	last, _, pathSlice := utils.ParseInputPath(args[0])
 
 	if r {
 		pathCache := make(map[string]struct {
@@ -115,7 +92,7 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 				ParentBin: parentID,
 			})
 			if err != nil {
-				return fmt.Errorf("dbq1: %v", err)
+				return err
 			}
 
 			pathCache[e] = struct {
@@ -140,7 +117,7 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 				UUID:  bin.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("dbq2: %v", err)
+				return err
 			}
 
 			if len(bins) > 1 {
@@ -194,10 +171,10 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
-	v := validateFlags(flags, "v")
+	v := utils.ValidateFlags(flags, "v")
 
-	_, _, sourceSlice := parseInputPath(args[0])
-	_, _, destinationSlice := parseInputPath(args[1])
+	_, _, sourceSlice := utils.ParseInputPath(args[0])
+	_, _, destinationSlice := utils.ParseInputPath(args[1])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
@@ -207,7 +184,7 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 			ParentBin: sourceParentID,
 		})
 		if err != nil {
-			return fmt.Errorf("dbq1: %v", err)
+			return err
 		}
 
 		sourceParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
@@ -267,7 +244,7 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
-	_, _, sourceSlice := parseInputPath(args[0])
+	_, _, sourceSlice := utils.ParseInputPath(args[0])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
@@ -277,7 +254,7 @@ func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
 			ParentBin: sourceParentID,
 		})
 		if err != nil {
-			return fmt.Errorf("dbq1: %v", err)
+			return err
 		}
 
 		sourceParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
