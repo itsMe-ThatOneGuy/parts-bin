@@ -23,7 +23,7 @@ func validateInputType(s string) (string, uuid.UUID) {
 	return inputType, uuidTest
 }
 
-func validateInputPath(s string) (last string, parent string, pathSlice []string) {
+func parseInputPath(s string) (last string, parent string, pathSlice []string) {
 	splitSlice := strings.Split(s, "/")
 	if splitSlice[0] == "" {
 		splitSlice = splitSlice[1:]
@@ -49,7 +49,7 @@ func validateFlags(flags map[string]struct{}, key string) bool {
 func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	p, v := validateFlags(flags, "p"), validateFlags(flags, "v")
 
-	last, _, pathSlice := validateInputPath(args[0])
+	last, _, pathSlice := parseInputPath(args[0])
 	if len(pathSlice) > 1 {
 
 		parentID := uuid.NullUUID{Valid: false}
@@ -110,7 +110,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	r, v := validateFlags(flags, "r"), validateFlags(flags, "v")
 
-	last, _, pathSlice := validateInputPath(args[0])
+	last, _, pathSlice := parseInputPath(args[0])
 
 	if r {
 		pathCache := make(map[string]struct {
@@ -207,8 +207,8 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	v := validateFlags(flags, "v")
 
-	_, _, sourceSlice := validateInputPath(args[0])
-	_, _, destinationSlice := validateInputPath(args[1])
+	_, _, sourceSlice := parseInputPath(args[0])
+	_, _, destinationSlice := parseInputPath(args[1])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
@@ -278,8 +278,7 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
-	// Take a path and list the contents of the last index
-	_, _, sourceSlice := validateInputPath(args[0])
+	_, _, sourceSlice := parseInputPath(args[0])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
