@@ -63,3 +63,20 @@ func GetLastBin(s *state.State, path string) (models.Bin, error) {
 	return models.Bin{}, nil
 }
 
+func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) {
+	bins, err := s.DBQueries.GetBinsByParent(context.Background(), parentID)
+	if err != nil {
+		return nil, err
+	}
+
+	binList := make([]models.Bin, len(bins))
+	for i, e := range bins {
+		binList[i] = models.Bin{
+			Name:     e.Name,
+			ID:       uuid.NullUUID{Valid: true, UUID: e.ID},
+			ParentID: e.ParentBin,
+		}
+	}
+
+	return binList, nil
+}
