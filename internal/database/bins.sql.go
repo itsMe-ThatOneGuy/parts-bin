@@ -103,13 +103,14 @@ func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 }
 
 const getBinsByParent = `-- name: GetBinsByParent :many
-SELECT id, name FROM bins
+SELECT id, name, parent_bin FROM bins
 WHERE parent_bin = $1
 `
 
 type GetBinsByParentRow struct {
-	ID   uuid.UUID
-	Name string
+	ID        uuid.UUID
+	Name      string
+	ParentBin uuid.NullUUID
 }
 
 func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) ([]GetBinsByParentRow, error) {
@@ -121,7 +122,7 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) 
 	var items []GetBinsByParentRow
 	for rows.Next() {
 		var i GetBinsByParentRow
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.ParentBin); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

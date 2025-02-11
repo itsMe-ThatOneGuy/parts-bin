@@ -18,7 +18,7 @@ WHERE name = $1
 AND (parent_bin IS NOT DISTINCT FROM $2);
 
 -- name: GetBinsByParent :many
-SELECT id, name FROM bins
+SELECT id, name, parent_bin FROM bins
 WHERE parent_bin = $1;
 
 -- name: DeleteBin :one
