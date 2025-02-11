@@ -80,3 +80,19 @@ func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) 
 
 	return binList, nil
 }
+
+func QueueBins(s *state.State, parentID uuid.NullUUID, queue *[]models.Bin) error {
+	bins, err := GetChildBins(s, parentID)
+	if err != nil {
+		return err
+	}
+
+	for _, bin := range bins {
+		*queue = append(*queue, bin)
+		if err := QueueBins(s, bin.ID, queue); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
