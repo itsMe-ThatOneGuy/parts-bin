@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
@@ -76,92 +77,49 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
 
-	last, _, pathSlice := utils.ParseInputPath(args[0])
+	bin, err := utils.GetLastBin(s, args[0])
+	if err != nil {
+		return err
+	}
+
+	var queue []models.Bin
+
+	if err := utils.QueueBins(s, bin.ID, &queue); err != nil {
+		return err
+	}
+
+	queue = append([]models.Bin{bin}, queue...)
+	slices.Reverse(queue)
 
 	if r {
-		pathCache := make(map[string]struct {
-			Name   string
-			ID     uuid.UUID
-			Parent uuid.NullUUID
-		})
-
-		parentID := uuid.NullUUID{Valid: false}
-		for _, e := range pathSlice {
-			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-				Name:      e,
-				ParentBin: parentID,
+		for _, e := range queue {
+			if v {
+				fmt.Printf("deleting '%s'\n", e.Name)
+			}
+			_, err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+				Name:      e.Name,
+				ParentBin: e.ParentID,
 			})
 			if err != nil {
 				return err
 			}
-
-			pathCache[e] = struct {
-				Name   string
-				ID     uuid.UUID
-				Parent uuid.NullUUID
-			}{
-				Name:   e,
-				ID:     bin.ID,
-				Parent: parentID,
-			}
-
-			parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
-		}
-
-		slices.Reverse(pathSlice)
-		for i, e := range pathSlice {
-			bin := pathCache[e]
-
-			bins, err := s.DBQueries.GetBinsByParent(context.TODO(), uuid.NullUUID{
-				Valid: true,
-				UUID:  bin.ID,
-			})
-			if err != nil {
-				return err
-			}
-
-			if len(bins) > 1 {
-				for _, e := range bins {
-					if v {
-						fmt.Printf("deleting '%s'\n", e.Name)
-					}
-
-					_, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
-						Name:      e.Name,
-						ParentBin: uuid.NullUUID{Valid: true, UUID: bin.ID},
-					})
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			if i != len(pathSlice)-1 {
-				if v {
-					fmt.Printf("deleting '%s'\n", bin.Name)
-				}
-
-				_, err = s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
-					Name:      bin.Name,
-					ParentBin: bin.Parent,
-				})
-				if err != nil {
-					return err
-				}
-			}
-
 		}
 
 		return nil
 	}
 
-	if v {
-		fmt.Printf("deleting '%s'\n", last)
+	if len(queue) > 1 {
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Name)
 	}
 
-	_, err := s.DBQueries.DeleteBin(context.TODO(), database.DeleteBinParams{
-		Name:      last,
-		ParentBin: uuid.NullUUID{Valid: false},
+	if v {
+
+		fmt.Printf("deleting '%s'\n", bin.Name)
+	}
+
+	_, err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+		Name:      bin.Name,
+		ParentBin: bin.ParentID,
 	})
 	if err != nil {
 		return err
