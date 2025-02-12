@@ -23,10 +23,13 @@ func main() {
 	input := os.Args[2:]
 
 	hasFlags := false
-	var flags []string
+	flags := make(map[string]struct{})
 	if strings.HasPrefix(input[0], "-") {
 		hasFlags = true
-		flags = strings.Split(input[0], "")[1:]
+		_flags := strings.Split(input[0], "")[1:]
+		for _, e := range _flags {
+			flags[string(e)] = struct{}{}
+		}
 	}
 
 	args := input
