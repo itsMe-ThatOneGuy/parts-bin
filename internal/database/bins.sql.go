@@ -51,11 +51,10 @@ func (q *Queries) DeleteAllBins(ctx context.Context) error {
 	return err
 }
 
-const deleteBin = `-- name: DeleteBin :one
+const deleteBin = `-- name: DeleteBin :exec
 DELETE FROM bins
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2)
-RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
 `
 
 type DeleteBinParams struct {
@@ -63,18 +62,9 @@ type DeleteBinParams struct {
 	ParentID uuid.NullUUID
 }
 
-func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, deleteBin, arg.Name, arg.ParentID)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentID,
-		&i.ParentIDOrNull,
-	)
-	return i, err
+func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) error {
+	_, err := q.db.ExecContext(ctx, deleteBin, arg.Name, arg.ParentID)
+	return err
 }
 
 const getBin = `-- name: GetBin :one

@@ -99,7 +99,7 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 			if v {
 				fmt.Printf("deleting '%s'\n", e.Name)
 			}
-			_, err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
 				Name:     e.Name,
 				ParentID: e.ParentID,
 			})
@@ -120,7 +120,7 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 		fmt.Printf("deleting '%s'\n", bin.Name)
 	}
 
-	_, err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
 		Name:     bin.Name,
 		ParentID: bin.ParentID,
 	})

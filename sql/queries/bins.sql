@@ -21,11 +21,10 @@ AND (parent_id IS NOT DISTINCT FROM $2);
 SELECT id, name, parent_id FROM bins
 WHERE parent_id = $1;
 
--- name: DeleteBin :one
+-- name: DeleteBin :exec
 DELETE FROM bins
 WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
-RETURNING *;
+AND (parent_id IS NOT DISTINCT FROM $2);
 
 -- name: UpdateBinName :one
 UPDATE bins SET name = $3, updated_at = NOW()
