@@ -10,22 +10,13 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
-func ParseInputPath(s string) (last string, parent string, pathSlice []string) {
+func ParseInputPath(s string) (pathSlice []string) {
 	splitSlice := strings.Split(s, "/")
 	if splitSlice[0] == "" {
 		splitSlice = splitSlice[1:]
 	}
 
-	lastIndex := len(splitSlice) - 1
-	_last := splitSlice[lastIndex]
-
-	if len(splitSlice) > 1 {
-		parentIndex := lastIndex - 1
-		_parent := splitSlice[parentIndex]
-		return _last, _parent, splitSlice
-	}
-
-	return _last, "", splitSlice
+	return splitSlice
 }
 
 func ValidateFlags(flags map[string]struct{}, key string) bool {
@@ -34,7 +25,7 @@ func ValidateFlags(flags map[string]struct{}, key string) bool {
 }
 
 func GetLastBin(s *state.State, path string) (models.Bin, error) {
-	_, _, pathSlice := ParseInputPath(path)
+	pathSlice := ParseInputPath(path)
 
 	parentID := uuid.NullUUID{Valid: false}
 	for i, e := range pathSlice {

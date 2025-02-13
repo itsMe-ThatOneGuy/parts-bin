@@ -16,7 +16,10 @@ import (
 func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	p, v := utils.ValidateFlags(flags, "p"), utils.ValidateFlags(flags, "v")
 
-	last, _, pathSlice := utils.ParseInputPath(args[0])
+	pathSlice := utils.ParseInputPath(args[0])
+
+	last := pathSlice[len(pathSlice)-1]
+
 	if len(pathSlice) > 1 {
 
 		parentID := uuid.NullUUID{Valid: false}
@@ -131,8 +134,8 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	v := utils.ValidateFlags(flags, "v")
 
-	_, _, sourceSlice := utils.ParseInputPath(args[0])
-	_, _, destinationSlice := utils.ParseInputPath(args[1])
+	sourceSlice := utils.ParseInputPath(args[0])
+	destinationSlice := utils.ParseInputPath(args[1])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
@@ -202,7 +205,7 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
-	_, _, sourceSlice := utils.ParseInputPath(args[0])
+	sourceSlice := utils.ParseInputPath(args[0])
 
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
