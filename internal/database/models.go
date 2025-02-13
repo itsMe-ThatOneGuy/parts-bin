@@ -11,10 +11,10 @@ import (
 )
 
 type Bin struct {
-	ID              uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	Name            string
-	ParentBin       uuid.NullUUID
-	ParentBinOrNull uuid.NullUUID
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Name           string
+	ParentID       uuid.NullUUID
+	ParentIDOrNull uuid.NullUUID
 }

@@ -30,8 +30,8 @@ func GetLastBin(s *state.State, path string) (models.Bin, error) {
 	parentID := uuid.NullUUID{Valid: false}
 	for i, e := range pathSlice {
 		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-			Name:      e,
-			ParentBin: parentID,
+			Name:     e,
+			ParentID: parentID,
 		})
 		if err != nil {
 			return models.Bin{}, err
@@ -65,7 +65,7 @@ func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) 
 		binList[i] = models.Bin{
 			Name:     e.Name,
 			ID:       uuid.NullUUID{Valid: true, UUID: e.ID},
-			ParentID: e.ParentBin,
+			ParentID: e.ParentID,
 		}
 	}
 

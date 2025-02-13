@@ -12,7 +12,7 @@ import (
 )
 
 const createBin = `-- name: CreateBin :one
-INSERT INTO bins (id, created_at, updated_at, name, parent_bin)
+INSERT INTO bins (id, created_at, updated_at, name, parent_id)
 VALUES (
     gen_random_uuid(),
     NOW(),
@@ -20,24 +20,24 @@ VALUES (
     $1,
     $2
 )
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
+RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
 `
 
 type CreateBinParams struct {
-	Name      string
-	ParentBin uuid.NullUUID
+	Name     string
+	ParentID uuid.NullUUID
 }
 
 func (q *Queries) CreateBin(ctx context.Context, arg CreateBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, createBin, arg.Name, arg.ParentBin)
+	row := q.db.QueryRowContext(ctx, createBin, arg.Name, arg.ParentID)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
+		&i.ParentID,
+		&i.ParentIDOrNull,
 	)
 	return i, err
 }
@@ -54,67 +54,67 @@ func (q *Queries) DeleteAllBins(ctx context.Context) error {
 const deleteBin = `-- name: DeleteBin :one
 DELETE FROM bins
 WHERE name = $1
-AND (parent_bin IS NOT DISTINCT FROM $2)
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
+AND (parent_id IS NOT DISTINCT FROM $2)
+RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
 `
 
 type DeleteBinParams struct {
-	Name      string
-	ParentBin uuid.NullUUID
+	Name     string
+	ParentID uuid.NullUUID
 }
 
 func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, deleteBin, arg.Name, arg.ParentBin)
+	row := q.db.QueryRowContext(ctx, deleteBin, arg.Name, arg.ParentID)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
+		&i.ParentID,
+		&i.ParentIDOrNull,
 	)
 	return i, err
 }
 
 const getBin = `-- name: GetBin :one
-SELECT id, created_at, updated_at, name, parent_bin, parent_bin_or_null FROM bins
+SELECT id, created_at, updated_at, name, parent_id, parent_id_or_null FROM bins
 WHERE name = $1
-AND (parent_bin IS NOT DISTINCT FROM $2)
+AND (parent_id IS NOT DISTINCT FROM $2)
 `
 
 type GetBinParams struct {
-	Name      string
-	ParentBin uuid.NullUUID
+	Name     string
+	ParentID uuid.NullUUID
 }
 
 func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentBin)
+	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentID)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
+		&i.ParentID,
+		&i.ParentIDOrNull,
 	)
 	return i, err
 }
 
 const getBinsByParent = `-- name: GetBinsByParent :many
-SELECT id, name, parent_bin FROM bins
-WHERE parent_bin = $1
+SELECT id, name, parent_id FROM bins
+WHERE parent_id = $1
 `
 
 type GetBinsByParentRow struct {
-	ID        uuid.UUID
-	Name      string
-	ParentBin uuid.NullUUID
+	ID       uuid.UUID
+	Name     string
+	ParentID uuid.NullUUID
 }
 
-func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) ([]GetBinsByParentRow, error) {
-	rows, err := q.db.QueryContext(ctx, getBinsByParent, parentBin)
+func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) ([]GetBinsByParentRow, error) {
+	rows, err := q.db.QueryContext(ctx, getBinsByParent, parentID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) 
 	var items []GetBinsByParentRow
 	for rows.Next() {
 		var i GetBinsByParentRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.ParentBin); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.ParentID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -139,43 +139,43 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentBin uuid.NullUUID) 
 const updateBinName = `-- name: UpdateBinName :one
 UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
-AND (parent_bin IS NOT DISTINCT FROM $2)
-RETURNING id, created_at, updated_at, name, parent_bin, parent_bin_or_null
+AND (parent_id IS NOT DISTINCT FROM $2)
+RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
 `
 
 type UpdateBinNameParams struct {
-	Name      string
-	ParentBin uuid.NullUUID
-	Name_2    string
+	Name     string
+	ParentID uuid.NullUUID
+	Name_2   string
 }
 
 func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentBin, arg.Name_2)
+	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.ParentBin,
-		&i.ParentBinOrNull,
+		&i.ParentID,
+		&i.ParentIDOrNull,
 	)
 	return i, err
 }
 
 const updateBinParent = `-- name: UpdateBinParent :exec
-UPDATE bins SET parent_bin = $3, updated_at = NOW()
+UPDATE bins SET parent_id = $3, updated_at = NOW()
 WHERE name = $1
-AND (parent_bin IS NOT DISTINCT FROM $2)
+AND (parent_id IS NOT DISTINCT FROM $2)
 `
 
 type UpdateBinParentParams struct {
-	Name        string
-	ParentBin   uuid.NullUUID
-	ParentBin_2 uuid.NullUUID
+	Name       string
+	ParentID   uuid.NullUUID
+	ParentID_2 uuid.NullUUID
 }
 
 func (q *Queries) UpdateBinParent(ctx context.Context, arg UpdateBinParentParams) error {
-	_, err := q.db.ExecContext(ctx, updateBinParent, arg.Name, arg.ParentBin, arg.ParentBin_2)
+	_, err := q.db.ExecContext(ctx, updateBinParent, arg.Name, arg.ParentID, arg.ParentID_2)
 	return err
 }

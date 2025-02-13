@@ -25,8 +25,8 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 		parentID := uuid.NullUUID{Valid: false}
 		for _, e := range pathSlice {
 			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-				Name:      e,
-				ParentBin: parentID,
+				Name:     e,
+				ParentID: parentID,
 			})
 			if err != nil {
 				if !p {
@@ -35,8 +35,8 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 				}
 
 				newBin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
-					Name:      e,
-					ParentBin: parentID,
+					Name:     e,
+					ParentID: parentID,
 				})
 				if err != nil {
 					msg := fmt.Sprintf("issue creating '%s' bin: %v", e, err)
@@ -63,8 +63,8 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	bin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
-		Name:      last,
-		ParentBin: uuid.NullUUID{Valid: false},
+		Name:     last,
+		ParentID: uuid.NullUUID{Valid: false},
 	})
 	if err != nil {
 		return err
@@ -100,8 +100,8 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 				fmt.Printf("deleting '%s'\n", e.Name)
 			}
 			_, err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-				Name:      e.Name,
-				ParentBin: e.ParentID,
+				Name:     e.Name,
+				ParentID: e.ParentID,
 			})
 			if err != nil {
 				return err
@@ -121,8 +121,8 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	_, err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-		Name:      bin.Name,
-		ParentBin: bin.ParentID,
+		Name:     bin.Name,
+		ParentID: bin.ParentID,
 	})
 	if err != nil {
 		return err
@@ -141,8 +141,8 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	lastBinInSource := database.Bin{}
 	for _, e := range sourceSlice {
 		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-			Name:      e,
-			ParentBin: sourceParentID,
+			Name:     e,
+			ParentID: sourceParentID,
 		})
 		if err != nil {
 			return err
@@ -156,8 +156,8 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	destinationParentID := uuid.NullUUID{Valid: false}
 	for i, e := range destinationSlice {
 		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-			Name:      e,
-			ParentBin: destinationParentID,
+			Name:     e,
+			ParentID: destinationParentID,
 		})
 		if err != nil {
 			if i != len(destinationSlice)-1 {
@@ -165,9 +165,9 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 			}
 
 			bin, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
-				Name:      lastBinInSource.Name,
-				ParentBin: destinationParentID,
-				Name_2:    e,
+				Name:     lastBinInSource.Name,
+				ParentID: destinationParentID,
+				Name_2:   e,
 			})
 			if err != nil {
 				return nil
@@ -183,9 +183,9 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	err := s.DBQueries.UpdateBinParent(context.Background(), database.UpdateBinParentParams{
-		Name:        lastBinInSource.Name,
-		ParentBin:   lastBinInSource.ParentBin,
-		ParentBin_2: destinationParentID,
+		Name:       lastBinInSource.Name,
+		ParentID:   lastBinInSource.ParentID,
+		ParentID_2: destinationParentID,
 	})
 	if err != nil {
 		return err
@@ -211,8 +211,8 @@ func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
 	lastBinInSource := database.Bin{}
 	for _, e := range sourceSlice {
 		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
-			Name:      e,
-			ParentBin: sourceParentID,
+			Name:     e,
+			ParentID: sourceParentID,
 		})
 		if err != nil {
 			return err
