@@ -5,7 +5,7 @@ CREATE TABLE parts (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     name TEXT NOT NULL,
-    sku TEXT UNIQUE NOT NULL,
+    sku TEXT,
     parent_id UUID NOT NULL 
     REFERENCES bins(id) ON DELETE CASCADE
 );
