@@ -8,3 +8,7 @@ VALUES (
     $2,
 )
 RETURNING *;
+
+-- name: CreateSku :exec
+UPDATE parts SET sku = $2
+WHERE name = $1;
