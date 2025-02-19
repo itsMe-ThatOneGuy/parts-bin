@@ -5,10 +5,10 @@ VALUES (
     NOW(),
     NOW(),
     $1,
-    $2,
+    $2
 )
 RETURNING *;
 
 -- name: CreateSku :exec
 UPDATE parts SET sku = $2
-WHERE name = $1;
+WHERE part_id = $1;
