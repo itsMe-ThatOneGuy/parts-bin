@@ -58,3 +58,39 @@ func (q *Queries) CreateSku(ctx context.Context, arg CreateSkuParams) error {
 	_, err := q.db.ExecContext(ctx, createSku, arg.PartID, arg.Sku)
 	return err
 }
+
+const getPartsByParent = `-- name: GetPartsByParent :many
+SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts 
+WHERE parent_id = $1
+`
+
+func (q *Queries) GetPartsByParent(ctx context.Context, parentID uuid.UUID) ([]Part, error) {
+	rows, err := q.db.QueryContext(ctx, getPartsByParent, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Part
+	for rows.Next() {
+		var i Part
+		if err := rows.Scan(
+			&i.PartID,
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Sku,
+			&i.ParentID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

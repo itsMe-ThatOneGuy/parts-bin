@@ -12,3 +12,7 @@ RETURNING *;
 -- name: CreateSku :exec
 UPDATE parts SET sku = $2
 WHERE part_id = $1;
+
+-- name: GetPartsByParent :many
+SELECT * FROM parts 
+WHERE parent_id = $1;
