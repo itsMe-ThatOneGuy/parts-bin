@@ -16,3 +16,9 @@ WHERE part_id = $1;
 -- name: GetPartsByParent :many
 SELECT * FROM parts 
 WHERE parent_id = $1;
+
+-- name: DeletePart :exec
+DELETE FROM parts
+WHERE
+    (name = $1 AND part_id = $2AND parent_id = $3) 
+    OR sku = $4;

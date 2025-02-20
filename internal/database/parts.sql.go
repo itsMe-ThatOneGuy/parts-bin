@@ -59,6 +59,30 @@ func (q *Queries) CreateSku(ctx context.Context, arg CreateSkuParams) error {
 	return err
 }
 
+const deletePart = `-- name: DeletePart :exec
+DELETE FROM parts
+WHERE
+    (name = $1 AND part_id = $2AND parent_id = $3) 
+    OR sku = $4
+`
+
+type DeletePartParams struct {
+	Name     string
+	PartID   int32
+	ParentID uuid.UUID
+	Sku      sql.NullString
+}
+
+func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
+	_, err := q.db.ExecContext(ctx, deletePart,
+		arg.Name,
+		arg.PartID,
+		arg.ParentID,
+		arg.Sku,
+	)
+	return err
+}
+
 const getPartsByParent = `-- name: GetPartsByParent :many
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts 
 WHERE parent_id = $1
