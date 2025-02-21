@@ -115,6 +115,15 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Name)
 	}
 
+	parts, err := s.DBQueries.GetPartsByParent(context.Background(), queue[0].ID.UUID)
+	if err != nil {
+		return err
+	}
+
+	if len(parts) > 0 {
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Name)
+	}
+
 	if v {
 
 		fmt.Printf("deleting '%s'\n", bin.Name)
