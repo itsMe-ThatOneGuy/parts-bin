@@ -83,6 +83,26 @@ func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 	return err
 }
 
+const getPart = `-- name: GetPart :one
+SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
+WHERE name = $1
+`
+
+func (q *Queries) GetPart(ctx context.Context, name string) (Part, error) {
+	row := q.db.QueryRowContext(ctx, getPart, name)
+	var i Part
+	err := row.Scan(
+		&i.PartID,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Sku,
+		&i.ParentID,
+	)
+	return i, err
+}
+
 const getPartsByParent = `-- name: GetPartsByParent :many
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts 
 WHERE parent_id = $1

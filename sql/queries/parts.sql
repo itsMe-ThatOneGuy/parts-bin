@@ -22,3 +22,7 @@ DELETE FROM parts
 WHERE
     (name = $1 AND part_id = $2AND parent_id = $3) 
     OR sku = $4;
+
+-- name: GetPart :one
+SELECT * FROM parts
+WHERE name = $1;
