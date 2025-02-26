@@ -23,13 +23,14 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	if len(pathSlice) > 1 {
 
 		parentID := uuid.NullUUID{Valid: false}
-		for _, e := range pathSlice {
+		for i, e := range pathSlice {
+			lastEle := i == len(pathSlice)-1
 			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
 				Name:     e,
 				ParentID: parentID,
 			})
 			if err != nil {
-				if !p {
+				if !lastEle && !p {
 					msg := fmt.Sprintf("mkbin: cannot create bin '%s': no such parent bin", e)
 					return errors.New(msg)
 				}
