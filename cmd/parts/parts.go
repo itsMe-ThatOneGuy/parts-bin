@@ -11,12 +11,10 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
 
-// validate the path
-// create the part in the parent bin
 func CreatePart(s *state.State, flags map[string]struct{}, args []string) error {
 	pathSlice := utils.ParseInputPath(args[0])
 	pathLen := len(pathSlice)
-	part := pathSlice[len(pathSlice)-1]
+	part := pathSlice[pathLen-1]
 	pathSlice = pathSlice[:pathLen-1]
 
 	parentID := uuid.NullUUID{Valid: false}
@@ -51,6 +49,19 @@ func CreatePart(s *state.State, flags map[string]struct{}, args []string) error 
 	if err != nil {
 		return nil
 	}
+
+	return nil
+}
+
+func GetPart(s *state.State, flags map[string]struct{}, args []string) error {
+	pathSlice := utils.ParseInputPath(args[0])
+	pathLen := len(pathSlice)
+	part, err := s.DBQueries.GetPart(context.Background(), pathSlice[pathLen-1])
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(part)
 
 	return nil
 }
