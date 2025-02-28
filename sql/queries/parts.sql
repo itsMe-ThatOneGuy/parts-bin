@@ -25,4 +25,5 @@ WHERE
 
 -- name: GetPart :one
 SELECT * FROM parts
-WHERE name = $1;
+WHERE name = $1
+AND (parent_id IS NOT DISTINCT FROM $2);
