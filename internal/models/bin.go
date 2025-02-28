@@ -7,3 +7,8 @@ type Bin struct {
 	ID       uuid.NullUUID
 	ParentID uuid.NullUUID
 }
+
+type Part struct {
+	Name     string
+	ParentID uuid.NullUUID
+}
