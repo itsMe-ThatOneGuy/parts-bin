@@ -24,24 +24,47 @@ func ValidateFlags(flags map[string]struct{}, key string) bool {
 	return exists
 }
 
-func GetLastBin(s *state.State, path string) (models.Bin, error) {
-	pathSlice := ParseInputPath(path)
-
+func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	parentID := uuid.NullUUID{Valid: false}
-	for i, e := range pathSlice {
+	for i, e := range path {
+		isLast := i == len(path)-1
+
 		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
 			Name:     e,
 			ParentID: parentID,
 		})
 		if err != nil {
-			return models.Bin{}, err
+			if isLast {
+				part, err := s.DBQueries.GetPart(context.Background(), database.GetPartParams{
+					Name:     e,
+					ParentID: parentID.UUID,
+				})
+				if err != nil {
+					return models.Element{}, err
+				}
+
+				last := models.Element{
+					Type: "part",
+					Data: models.Part{
+						Name:     part.Name,
+						ParentID: parentID,
+					},
+				}
+
+				return last, nil
+			}
+
+			return models.Element{}, err
 		}
 
-		if i == len(pathSlice)-1 {
-			last := models.Bin{
-				Name:     e,
-				ID:       uuid.NullUUID{Valid: true, UUID: bin.ID},
-				ParentID: parentID,
+		if isLast {
+			last := models.Element{
+				Type: "bin",
+				Data: models.Bin{
+					Name:     e,
+					ID:       uuid.NullUUID{Valid: true, UUID: bin.ID},
+					ParentID: parentID,
+				},
 			}
 
 			return last, nil
@@ -51,7 +74,7 @@ func GetLastBin(s *state.State, path string) (models.Bin, error) {
 		parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
 	}
 
-	return models.Bin{}, nil
+	return models.Element{}, nil
 }
 
 func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) {
