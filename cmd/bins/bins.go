@@ -81,18 +81,20 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
 
-	bin, err := utils.GetLastBin(s, args[0])
+	pathSlice := utils.ParseInputPath(args[0])
+
+	bin, err := utils.GetLastElement(s, pathSlice)
 	if err != nil {
 		return err
 	}
 
 	var queue []models.Bin
 
-	if err := utils.QueueBins(s, bin.ID, &queue); err != nil {
+	if err := utils.QueueBins(s, bin.Data.(models.Bin).ID, &queue); err != nil {
 		return err
 	}
 
-	queue = append([]models.Bin{bin}, queue...)
+	queue = append([]models.Bin{bin.Data.(models.Bin)}, queue...)
 	slices.Reverse(queue)
 
 	if r {
@@ -113,7 +115,7 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if len(queue) > 1 {
-		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Name)
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Data.(models.Bin).Name)
 	}
 
 	parts, err := s.DBQueries.GetPartsByParent(context.Background(), queue[0].ID.UUID)
@@ -122,17 +124,17 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if len(parts) > 0 {
-		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Name)
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", bin.Data.(models.Bin).Name)
 	}
 
 	if v {
 
-		fmt.Printf("deleting '%s'\n", bin.Name)
+		fmt.Printf("deleting '%s'\n", bin.Data.(models.Bin).Name)
 	}
 
 	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-		Name:     bin.Name,
-		ParentID: bin.ParentID,
+		Name:     bin.Data.(models.Bin).Name,
+		ParentID: bin.Data.(models.Bin).ParentID,
 	})
 	if err != nil {
 		return err
