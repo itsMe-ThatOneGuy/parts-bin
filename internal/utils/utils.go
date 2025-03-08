@@ -39,16 +39,23 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 					Name:     e,
 					ParentID: parentID.UUID,
 				})
-				if err != nil {
-					return models.Element{}, err
+				if err == nil {
+					last := models.Element{
+						Type:     "part",
+						Name:     part.Name,
+						Sku:      part.Sku.String,
+						ID:       uuid.NullUUID{Valid: true, UUID: part.ID},
+						ParentID: parentID,
+					}
+
+					return last, nil
 				}
 
 				last := models.Element{
-					Type: "part",
-					Data: models.Part{
-						Name:     part.Name,
-						ParentID: parentID,
-					},
+					Type:     "unknown",
+					Name:     e,
+					ID:       uuid.NullUUID{Valid: false},
+					ParentID: parentID,
 				}
 
 				return last, nil
@@ -59,12 +66,10 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 
 		if isLast {
 			last := models.Element{
-				Type: "bin",
-				Data: models.Bin{
-					Name:     e,
-					ID:       uuid.NullUUID{Valid: true, UUID: bin.ID},
-					ParentID: parentID,
-				},
+				Type:     "bin",
+				Name:     e,
+				ID:       uuid.NullUUID{Valid: true, UUID: bin.ID},
+				ParentID: parentID,
 			}
 
 			return last, nil
