@@ -192,11 +192,17 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if elementName != srcElement.Name {
-		if srcElement.Type != destElement.Type {
-			return nil
-		}
-
 		fmt.Println("updating name")
+
+		if srcElement.Type == "part" {
+			err := s.DBQueries.UpdatePartName(context.Background(), database.UpdatePartNameParams{
+				ID:   srcElement.ID.UUID,
+				Name: elementName,
+			})
+			if err != nil {
+				return err
+			}
+		}
 
 		if srcElement.Type == "bin" {
 			_, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
@@ -283,12 +289,10 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 				Name_2:   e,
 			})
 			if err != nil {
-				return nil
+				return err
 			}
 
 			lastBinInSource = bin
-
-			break
 		}
 
 		destinationParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
