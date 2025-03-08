@@ -144,3 +144,18 @@ func (q *Queries) GetPartsByParent(ctx context.Context, parentID uuid.UUID) ([]P
 	}
 	return items, nil
 }
+
+const updatePartParent = `-- name: UpdatePartParent :exec
+UPDATE parts SET parent_id = $2, updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdatePartParentParams struct {
+	ID       uuid.UUID
+	ParentID uuid.UUID
+}
+
+func (q *Queries) UpdatePartParent(ctx context.Context, arg UpdatePartParentParams) error {
+	_, err := q.db.ExecContext(ctx, updatePartParent, arg.ID, arg.ParentID)
+	return err
+}
