@@ -32,3 +32,6 @@ AND (parent_id IS NOT DISTINCT FROM $2);
 UPDATE parts SET parent_id = $2, updated_at = NOW()
 WHERE id = $1;
 
+-- name: UpdatePartName :exec
+UPDATE parts SET name = $2, updated_at = NOW()
+WHERE id = $1;
