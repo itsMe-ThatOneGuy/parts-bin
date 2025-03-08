@@ -149,6 +149,101 @@ func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
+func Mv(s *state.State, flags map[string]struct{}, args []string) error {
+	srcSlice := utils.ParseInputPath(args[0])
+	destSlice := utils.ParseInputPath(args[1])
+
+	fmt.Println("getting source element")
+	srcElement, err := utils.GetLastElement(s, srcSlice)
+	if err != nil {
+		return fmt.Errorf("source path not found: %w", err)
+	}
+
+	fmt.Println("getting destination element")
+	destElement, err := utils.GetLastElement(s, destSlice)
+	if err != nil {
+		return fmt.Errorf("source path not found: %w", err)
+	}
+
+	if srcElement.Type == "bin" && destElement.Type == "part" {
+		return fmt.Errorf("cnat move a bin to a part")
+	}
+
+	destExists := destElement.ID.Valid
+	elementParentID := uuid.NullUUID{Valid: false}
+
+	if destExists {
+		elementParentID = destElement.ParentID
+
+		if destElement.ID != srcElement.ID {
+			elementParentID = destElement.ID
+		}
+	} else {
+		elementParentID = destElement.ParentID
+
+		if srcElement.ParentID == destElement.ParentID {
+			elementParentID = srcElement.ID
+		}
+	}
+
+	elementName := srcElement.Name
+	if !destExists && destElement.Name != "" {
+		elementName = destElement.Name
+	}
+
+	if elementName != srcElement.Name {
+		if srcElement.Type != destElement.Type {
+			return nil
+		}
+
+		fmt.Println("updating name")
+
+		if srcElement.Type == "bin" {
+			_, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
+				Name:     srcElement.Name,
+				ParentID: srcElement.ParentID,
+				Name_2:   elementName,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if srcElement.ParentID != elementParentID {
+		if srcElement.ID != elementParentID {
+			if srcElement.Type == "part" && destElement.Type == "part" {
+				return nil
+			}
+
+			fmt.Println("updating parent")
+
+			if srcElement.Type == "part" {
+				err := s.DBQueries.UpdatePartParent(context.Background(), database.UpdatePartParentParams{
+					ID:       srcElement.ID.UUID,
+					ParentID: elementParentID.UUID,
+				})
+				if err != nil {
+					return err
+				}
+			}
+
+			if srcElement.Type == "bin" {
+				err := s.DBQueries.UpdateBinParent(context.Background(), database.UpdateBinParentParams{
+					Name:       elementName,
+					ParentID:   srcElement.ParentID,
+					ParentID_2: elementParentID,
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	v := utils.ValidateFlags(flags, "v")
 
