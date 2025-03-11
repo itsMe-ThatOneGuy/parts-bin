@@ -17,6 +17,10 @@ WHERE part_id = $1;
 SELECT * FROM parts 
 WHERE parent_id = $1;
 
+-- name: DeletePartByID :exec
+DELETE FROM parts
+WHERE id = $1;
+
 -- name: DeletePart :exec
 DELETE FROM parts
 WHERE

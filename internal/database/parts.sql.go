@@ -83,6 +83,16 @@ func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 	return err
 }
 
+const deletePartByID = `-- name: DeletePartByID :exec
+DELETE FROM parts
+WHERE id = $1
+`
+
+func (q *Queries) DeletePartByID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deletePartByID, id)
+	return err
+}
+
 const getPart = `-- name: GetPart :one
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
 WHERE name = $1
