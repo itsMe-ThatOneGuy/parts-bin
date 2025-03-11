@@ -78,6 +78,87 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
+func Rm(s *state.State, flags map[string]struct{}, args []string) error {
+	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
+
+	pathSlice := utils.ParseInputPath(args[0])
+
+	lastElem, err := utils.GetLastElement(s, pathSlice)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(lastElem)
+
+	if lastElem.Type == "unknown" {
+		return errors.New("last element not identified")
+	}
+
+	if lastElem.Type == "part" {
+		return s.DBQueries.DeletePartByID(context.Background(), lastElem.ID.UUID)
+	}
+
+	var queue []models.Bin
+
+	if err := utils.QueueBins(s, lastElem.ID, &queue); err != nil {
+		return err
+	}
+
+	thisBin := models.Bin{
+		Name:     lastElem.Name,
+		ID:       lastElem.ID,
+		ParentID: lastElem.ParentID,
+	}
+
+	queue = append([]models.Bin{thisBin}, queue...)
+	slices.Reverse(queue)
+
+	if r {
+		for _, e := range queue {
+			if v {
+				fmt.Printf("deleting '%s'\n", e.Name)
+			}
+			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+				Name:     e.Name,
+				ParentID: e.ParentID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	if len(queue) > 1 {
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", thisBin.Name)
+	}
+
+	parts, err := s.DBQueries.GetPartsByParent(context.Background(), queue[0].ID.UUID)
+	if err != nil {
+		return err
+	}
+
+	if len(parts) > 0 {
+		return fmt.Errorf("failed to remove '%s': Bin is not empty", thisBin.Name)
+	}
+
+	if v {
+
+		fmt.Printf("deleting '%s'\n", thisBin.Name)
+	}
+
+	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
+		Name:     thisBin.Name,
+		ParentID: thisBin.ParentID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func DeleteBin(s *state.State, flags map[string]struct{}, args []string) error {
 	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
 
