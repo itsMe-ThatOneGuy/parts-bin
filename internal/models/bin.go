@@ -18,5 +18,6 @@ type Bin struct {
 
 type Part struct {
 	Name     string
+	ID       uuid.NullUUID
 	ParentID uuid.NullUUID
 }
