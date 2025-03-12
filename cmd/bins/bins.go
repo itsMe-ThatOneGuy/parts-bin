@@ -402,6 +402,58 @@ func UpdateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
+func Ls(s *state.State, flags map[string]struct{}, args []string) error {
+	srcSlice := utils.ParseInputPath(args[0])
+
+	lastElem, err := utils.GetLastElement(s, srcSlice)
+	if err != nil {
+		return err
+	}
+
+	if lastElem.Type == "part" {
+		fmt.Println("PRINT PART DETAILS")
+		return nil
+	}
+
+	bins, err := s.DBQueries.GetBinsByParent(context.Background(), uuid.NullUUID{
+		Valid: true,
+		UUID:  lastElem.ID.UUID,
+	})
+
+	parts, err := s.DBQueries.GetPartsByParent(context.Background(), lastElem.ID.UUID)
+	if err != nil {
+		return err
+	}
+
+	var binString string
+	for i, e := range bins {
+		binString += fmt.Sprintf("%s\t", e.Name)
+		if i%5 == 4 {
+			binString += "\n"
+		}
+	}
+
+	var partString string
+	for i, e := range parts {
+		partString += fmt.Sprintf("%s\t", e.Name)
+		if i%5 == 4 {
+			partString += "\n"
+		}
+	}
+
+	fmt.Println("----------")
+	fmt.Println("Bins:")
+	fmt.Println("----------")
+	fmt.Println(binString)
+	fmt.Println()
+	fmt.Println("----------")
+	fmt.Println("Parts:")
+	fmt.Println("----------")
+	fmt.Println(partString)
+
+	return nil
+}
+
 func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
 	sourceSlice := utils.ParseInputPath(args[0])
 
