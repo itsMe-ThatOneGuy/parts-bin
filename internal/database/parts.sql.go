@@ -119,6 +119,26 @@ func (q *Queries) GetPart(ctx context.Context, arg GetPartParams) (Part, error) 
 	return i, err
 }
 
+const getPartByID = `-- name: GetPartByID :one
+SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
+WHERE id = $1
+`
+
+func (q *Queries) GetPartByID(ctx context.Context, id uuid.UUID) (Part, error) {
+	row := q.db.QueryRowContext(ctx, getPartByID, id)
+	var i Part
+	err := row.Scan(
+		&i.PartID,
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Sku,
+		&i.ParentID,
+	)
+	return i, err
+}
+
 const getPartsByParent = `-- name: GetPartsByParent :many
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts 
 WHERE parent_id = $1

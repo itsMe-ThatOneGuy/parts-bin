@@ -32,6 +32,10 @@ SELECT * FROM parts
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2);
 
+-- name: GetPartByID :one
+SELECT * FROM parts
+WHERE id = $1;
+
 -- name: UpdatePartParent :exec
 UPDATE parts SET parent_id = $2, updated_at = NOW()
 WHERE id = $1;
