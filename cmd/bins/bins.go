@@ -25,7 +25,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 		parentID := uuid.NullUUID{Valid: false}
 		for i, e := range pathSlice {
 			lastEle := i == len(pathSlice)-1
-			bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+			bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
 				Name:     e,
 				ParentID: parentID,
 			})
@@ -35,7 +35,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 					return errors.New(msg)
 				}
 
-				newBin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
+				newBin, err := s.DBQueries.CreateBin(context.Background(), database.CreateBinParams{
 					Name:     e,
 					ParentID: parentID,
 				})
@@ -63,7 +63,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 		return nil
 	}
 
-	bin, err := s.DBQueries.CreateBin(context.TODO(), database.CreateBinParams{
+	bin, err := s.DBQueries.CreateBin(context.Background(), database.CreateBinParams{
 		Name:     last,
 		ParentID: uuid.NullUUID{Valid: false},
 	})
@@ -318,7 +318,7 @@ func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
 	sourceParentID := uuid.NullUUID{Valid: false}
 	lastBinInSource := database.Bin{}
 	for _, e := range sourceSlice {
-		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
 			Name:     e,
 			ParentID: sourceParentID,
 		})
