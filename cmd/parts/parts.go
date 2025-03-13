@@ -55,8 +55,13 @@ func CreatePart(s *state.State, flags map[string]struct{}, args []string) error 
 
 func GetPart(s *state.State, flags map[string]struct{}, args []string) error {
 	pathSlice := utils.ParseInputPath(args[0])
-	pathLen := len(pathSlice)
-	part, err := s.DBQueries.GetPart(context.Background(), pathSlice[pathLen-1])
+
+	lastElem, err := utils.GetLastElement(s, pathSlice)
+	if err != nil {
+		return err
+	}
+
+	part, err := s.DBQueries.GetPartByID(context.Background(), lastElem.ID.UUID)
 	if err != nil {
 		return err
 	}
