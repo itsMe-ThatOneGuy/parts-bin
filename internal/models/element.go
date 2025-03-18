@@ -2,8 +2,10 @@ package models
 
 import "github.com/google/uuid"
 
-type Bin struct {
+type Element struct {
+	Type     string
 	Name     string
+	Sku      string
 	ID       uuid.NullUUID
 	ParentID uuid.NullUUID
 }
