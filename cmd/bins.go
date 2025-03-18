@@ -1,4 +1,4 @@
-package bins
+package cmd
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package parts
+package cmd
 
 import (
 	"context"
