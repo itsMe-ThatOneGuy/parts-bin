@@ -7,7 +7,14 @@ import (
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/config"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
 )
+
+type State struct {
+	Config    *config.Config
+	DBQueries *database.Queries
+	DB        *sql.DB
+}
 
 func (s *State) InitConfig() error {
 	cfg, err := config.Read()

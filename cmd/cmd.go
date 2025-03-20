@@ -1,10 +1,16 @@
 package cmd
 
 import (
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
-var commands = []models.Command{
+type Command struct {
+	Name        string
+	Description string
+	Callback    func(*state.State, map[string]struct{}, []string) error
+}
+
+var commands = []Command{
 	{
 		Name:        "bin",
 		Description: "Create a bin in provided path",
