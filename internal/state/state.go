@@ -14,6 +14,7 @@ type State struct {
 	Config    *config.Config
 	DBQueries *database.Queries
 	DB        *sql.DB
+	Commands  map[string]models.Command
 }
 
 func (s *State) InitConfig() error {
