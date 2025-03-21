@@ -19,6 +19,20 @@ func ParseInputPath(s string) (pathSlice []string) {
 	return splitSlice
 }
 
+func ParseFlags(input []string, flagBool *bool) map[string]struct{} {
+	flags := make(map[string]struct{})
+
+	if strings.HasPrefix(input[1], "-") {
+		*flagBool = true
+		_flags := strings.Split(input[1], "")[1:]
+		for _, e := range _flags {
+			flags[string(e)] = struct{}{}
+		}
+	}
+
+	return flags
+}
+
 func ValidateFlags(flags map[string]struct{}, key string) bool {
 	_, exists := flags[key]
 	return exists
