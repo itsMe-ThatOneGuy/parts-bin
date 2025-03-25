@@ -23,8 +23,6 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 		return err
 	}
 
-	fmt.Println(lastElem)
-
 	if lastElem.Type == "unknown" {
 		return errors.New("last element not identified")
 	}
@@ -98,13 +96,11 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 	srcSlice := utils.ParseInputPath(args[0])
 	destSlice := utils.ParseInputPath(args[1])
 
-	fmt.Println("getting source element")
 	srcElement, err := utils.GetLastElement(s, srcSlice)
 	if err != nil {
 		return fmt.Errorf("source path not found: %w", err)
 	}
 
-	fmt.Println("getting destination element")
 	destElement, err := utils.GetLastElement(s, destSlice)
 	if err != nil {
 		return fmt.Errorf("source path not found: %w", err)
@@ -137,8 +133,6 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if elementName != srcElement.Name {
-		fmt.Println("updating name")
-
 		if srcElement.Type == "part" {
 			err := s.DBQueries.UpdatePartName(context.Background(), database.UpdatePartNameParams{
 				ID:   srcElement.ID.UUID,
@@ -166,8 +160,6 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 			if srcElement.Type == "part" && destElement.Type == "part" {
 				return nil
 			}
-
-			fmt.Println("updating parent")
 
 			if srcElement.Type == "part" {
 				err := s.DBQueries.UpdatePartParent(context.Background(), database.UpdatePartParentParams{
