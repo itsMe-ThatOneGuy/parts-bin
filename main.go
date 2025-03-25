@@ -72,16 +72,6 @@ func main() {
 		fmt.Println(bin)
 	}
 
-}
+	cmd.RunCommand(state)
 
-func server() {
-	mux := http.NewServeMux()
-
-	server := &http.Server{
-		Handler: mux,
-		Addr:    ":" + "8080",
-	}
-
-	log.Println("Serving on port 8080")
-	log.Fatal(server.ListenAndServe())
 }
