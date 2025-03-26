@@ -93,8 +93,12 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func Mv(s *state.State, flags map[string]struct{}, args []string) error {
-	srcSlice := utils.ParseInputPath(args[0])
-	destSlice := utils.ParseInputPath(args[1])
+	v := utils.ValidateFlags(flags, "v")
+
+	srcPath := args[0]
+	destPath := args[1]
+	srcSlice := utils.ParseInputPath(srcPath)
+	destSlice := utils.ParseInputPath(destPath)
 
 	srcElement, err := utils.GetLastElement(s, srcSlice)
 	if err != nil {
