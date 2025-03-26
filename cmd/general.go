@@ -111,7 +111,7 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if srcElement.Type == "bin" && destElement.Type == "part" {
-		return fmt.Errorf("cnat move a bin to a part")
+		return fmt.Errorf("can't move a bin to a part: %w", err)
 	}
 
 	destExists := destElement.ID.Valid
@@ -186,6 +186,10 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 				}
 			}
 		}
+	}
+
+	if v {
+		fmt.Printf("renamed '%s' -> '%s'\n", srcPath, destPath)
 	}
 
 	return nil
