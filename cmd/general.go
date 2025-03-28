@@ -196,7 +196,10 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func Ls(s *state.State, flags map[string]struct{}, args []string) error {
-	srcSlice := utils.ParseInputPath(args[0])
+	srcSlice := args
+	if len(args) > 0 {
+		srcSlice = utils.ParseInputPath(args[0])
+	}
 
 	lastElem, err := utils.GetLastElement(s, srcSlice)
 	if err != nil {
