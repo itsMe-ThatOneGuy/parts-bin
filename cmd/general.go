@@ -237,15 +237,20 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 		}
 	}
 
-	fmt.Println("----------")
-	fmt.Println("Bins:")
-	fmt.Println("----------")
-	fmt.Println(binString)
-	fmt.Println()
-	fmt.Println("----------")
-	fmt.Println("Parts:")
-	fmt.Println("----------")
-	fmt.Println(partString)
+	if len(bins) > 0 {
+		fmt.Println("----------")
+		fmt.Println("Bins:")
+		fmt.Println("----------")
+		fmt.Println(binString)
+		fmt.Println()
+	}
+	if len(parts) > 0 {
+		fmt.Println("----------")
+		fmt.Println("Parts:")
+		fmt.Println("----------")
+		fmt.Println(partString)
+		fmt.Println()
+	}
 
 	return nil
 }
