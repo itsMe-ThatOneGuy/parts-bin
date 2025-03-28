@@ -206,6 +206,10 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 		return err
 	}
 
+	if lastElem.Type == "unknown" {
+		return errors.New("not a valid bin")
+	}
+
 	if lastElem.Type == "part" {
 		fmt.Println("PRINT PART DETAILS")
 		return nil
