@@ -218,10 +218,10 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 		return nil
 	}
 
-	bins, err := s.DBQueries.GetBinsByParent(context.Background(), uuid.NullUUID{
-		Valid: true,
-		UUID:  lastElem.ID.UUID,
-	})
+	bins, err := s.DBQueries.GetBinsByParent(context.Background(), lastElem.ID)
+	if err != nil {
+		return err
+	}
 
 	parts, err := s.DBQueries.GetPartsByParent(context.Background(), lastElem.ID.UUID)
 	if err != nil {
