@@ -46,13 +46,25 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 		ParentID: lastElem.ParentID,
 	}
 
+	var queue []models.Bin
+
+	if err := utils.QueueBins(s, lastElem.ID, &queue); err != nil {
+		return err
+	}
+
 	queue = append([]models.Bin{thisBin}, queue...)
 	slices.Reverse(queue)
 
 	if r {
 		for _, e := range queue {
 			if v {
-				fmt.Printf("deleting '%s'\n", e.Name)
+				parts, _ := s.DBQueries.GetPartsByParent(context.Background(), e.ID.UUID)
+				if len(parts) >= 1 {
+					for _, part := range parts {
+						fmt.Printf("deleting part: '%s'\n", part.Name)
+					}
+				}
+				fmt.Printf("deleting bin: '%s'\n", e.Name)
 			}
 			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
 				Name:     e.Name,
@@ -61,6 +73,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 			if err != nil {
 				return err
 			}
+
 		}
 
 		return nil
@@ -79,17 +92,16 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 		return fmt.Errorf("failed to remove '%s': Bin is not empty", thisBin.Name)
 	}
 
-	if v {
-
-		fmt.Printf("deleting '%s'\n", thisBin.Name)
-	}
-
 	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
 		Name:     thisBin.Name,
 		ParentID: thisBin.ParentID,
 	})
 	if err != nil {
 		return err
+	}
+
+	if v {
+		fmt.Printf("deleting bin: '%s'\n", thisBin.Name)
 	}
 
 	return nil
