@@ -28,13 +28,16 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if lastElem.Type == "part" {
-		return s.DBQueries.DeletePartByID(context.Background(), lastElem.ID.UUID)
-	}
+		err := s.DBQueries.DeletePartByID(context.Background(), lastElem.ID.UUID)
+		if err != nil {
+			return nil
+		}
 
-	var queue []models.Bin
+		if v {
+			fmt.Printf("deleting part: '%s'\n", lastElem.Name)
+		}
 
-	if err := utils.QueueBins(s, lastElem.ID, &queue); err != nil {
-		return err
+		return nil
 	}
 
 	thisBin := models.Bin{
