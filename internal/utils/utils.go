@@ -10,8 +10,11 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
-func ParseInputPath(s string) (pathSlice []string) {
-	splitSlice := strings.Split(s, "/")
+func ParseInputPath(path string) (pathSlice []string) {
+	if len(path) < 1 {
+		return []string{""}
+	}
+	splitSlice := strings.Split(path, "/")
 	if splitSlice[0] == "" {
 		splitSlice = splitSlice[1:]
 	}
