@@ -26,11 +26,10 @@ DELETE FROM bins
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2);
 
--- name: UpdateBinName :one
+-- name: UpdateBinName :exec
 UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
-RETURNING *;
+AND (parent_id IS NOT DISTINCT FROM $2);
 
 -- name: UpdateBinParent :exec
 UPDATE bins SET parent_id = $3, updated_at = NOW()

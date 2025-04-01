@@ -127,11 +127,10 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) (
 	return items, nil
 }
 
-const updateBinName = `-- name: UpdateBinName :one
+const updateBinName = `-- name: UpdateBinName :exec
 UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2)
-RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
 `
 
 type UpdateBinNameParams struct {
@@ -140,18 +139,9 @@ type UpdateBinNameParams struct {
 	Name_2   string
 }
 
-func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
-	var i Bin
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.ParentID,
-		&i.ParentIDOrNull,
-	)
-	return i, err
+func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) error {
+	_, err := q.db.ExecContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
+	return err
 }
 
 const updateBinParent = `-- name: UpdateBinParent :exec
