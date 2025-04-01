@@ -163,7 +163,7 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 		}
 
 		if srcElement.Type == "bin" {
-			_, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
+			err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
 				Name:     srcElement.Name,
 				ParentID: srcElement.ParentID,
 				Name_2:   elementName,
@@ -211,6 +211,8 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 }
 
 func Ls(s *state.State, flags map[string]struct{}, args []string) error {
+	l := utils.ValidateFlags(flags, "l")
+
 	srcSlice := args
 	if len(args) > 0 {
 		srcSlice = utils.ParseInputPath(args[0])
@@ -242,24 +244,48 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 
 	var binString string
 	for i, e := range bins {
-		binString += fmt.Sprintf("%s\t", e.Name)
-		if i%5 == 4 {
-			binString += "\n"
+		if l {
+			binString += fmt.Sprintf("%s\n", e.Name)
+			binString += fmt.Sprintf("- ID:\t\t %s\n", e.ID)
+			binString += fmt.Sprintf("- Created:\t %s\n", e.CreatedAt)
+			binString += fmt.Sprintf("- Last Update:\t %s\n", e.UpdatedAt)
+			binString += fmt.Sprint("\n")
+
+		} else {
+			binString += fmt.Sprintf("%s\t", e.Name)
+			if i%5 == 4 {
+				binString += "\n"
+			}
 		}
+
 	}
 
 	var partString string
 	for i, e := range parts {
-		partString += fmt.Sprintf("%s\t", e.Name)
-		if i%5 == 4 {
-			partString += "\n"
+		if l {
+			partString += fmt.Sprintf("%s\n", e.Name)
+			partString += fmt.Sprintf("- Sku:\t\t %s\n", e.Sku.String)
+			partString += fmt.Sprintf("- ID:\t\t %s\n", e.ID)
+			partString += fmt.Sprintf("- Created:\t %s\n", e.CreatedAt)
+			partString += fmt.Sprintf("- Last Update:\t %s\n", e.UpdatedAt)
+			partString += fmt.Sprint("\n")
+		} else {
+			partString += fmt.Sprintf("%s\t", e.Name)
+			if i%5 == 4 {
+				partString += "\n"
+			}
 		}
+
 	}
 
 	if len(bins) > 0 {
 		fmt.Println("----------")
 		fmt.Println("Bins:")
 		fmt.Println("----------")
+		if l {
+			fmt.Printf("Total: %d\n", len(bins))
+			fmt.Println()
+		}
 		fmt.Println(binString)
 		fmt.Println()
 	}
@@ -267,6 +293,10 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 		fmt.Println("----------")
 		fmt.Println("Parts:")
 		fmt.Println("----------")
+		if l {
+			fmt.Printf("Total: %d\n", len(parts))
+			fmt.Println()
+		}
 		fmt.Println(partString)
 		fmt.Println()
 	}
