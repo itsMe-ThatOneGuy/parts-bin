@@ -93,26 +93,27 @@ func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 }
 
 const getBinsByParent = `-- name: GetBinsByParent :many
-SELECT id, name, parent_id FROM bins
+SELECT id, created_at, updated_at, name, parent_id, parent_id_or_null FROM bins
 WHERE (parent_id = $1 OR (parent_id IS NULL AND $1 IS NULL))
 `
 
-type GetBinsByParentRow struct {
-	ID       uuid.UUID
-	Name     string
-	ParentID uuid.NullUUID
-}
-
-func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) ([]GetBinsByParentRow, error) {
+func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) ([]Bin, error) {
 	rows, err := q.db.QueryContext(ctx, getBinsByParent, parentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetBinsByParentRow
+	var items []Bin
 	for rows.Next() {
-		var i GetBinsByParentRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.ParentID); err != nil {
+		var i Bin
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.ParentID,
+			&i.ParentIDOrNull,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
