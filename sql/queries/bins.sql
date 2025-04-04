@@ -23,8 +23,8 @@ WHERE (parent_id = $1 OR (parent_id IS NULL AND $1 IS NULL));
 
 -- name: DeleteBin :exec
 DELETE FROM bins
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2);
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR id = $3;
 
 -- name: UpdateBinName :exec
 UPDATE bins SET name = $3, updated_at = NOW()

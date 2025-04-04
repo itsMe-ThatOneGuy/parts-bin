@@ -69,8 +69,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 				fmt.Printf("deleting bin: '%s'\n", e.Name)
 			}
 			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-				Name:     e.Name,
-				ParentID: e.ParentID,
+				ID: e.ID.UUID,
 			})
 			if err != nil {
 				return err
@@ -95,8 +94,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-		Name:     thisBin.Name,
-		ParentID: thisBin.ParentID,
+		ID: lastElem.ID.UUID,
 	})
 	if err != nil {
 		return err

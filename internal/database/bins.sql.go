@@ -53,17 +53,18 @@ func (q *Queries) DeleteAllBins(ctx context.Context) error {
 
 const deleteBin = `-- name: DeleteBin :exec
 DELETE FROM bins
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR id = $3
 `
 
 type DeleteBinParams struct {
 	Name     string
 	ParentID uuid.NullUUID
+	ID       uuid.UUID
 }
 
 func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteBin, arg.Name, arg.ParentID)
+	_, err := q.db.ExecContext(ctx, deleteBin, arg.Name, arg.ParentID, arg.ID)
 	return err
 }
 
