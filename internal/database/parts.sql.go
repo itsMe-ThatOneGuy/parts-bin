@@ -97,17 +97,25 @@ func (q *Queries) DeletePartByID(ctx context.Context, id uuid.UUID) error {
 
 const getPart = `-- name: GetPart :one
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR sku = $3
+OR id = $4
 `
 
 type GetPartParams struct {
 	Name     string
 	ParentID uuid.UUID
+	Sku      sql.NullString
+	ID       uuid.UUID
 }
 
 func (q *Queries) GetPart(ctx context.Context, arg GetPartParams) (Part, error) {
-	row := q.db.QueryRowContext(ctx, getPart, arg.Name, arg.ParentID)
+	row := q.db.QueryRowContext(ctx, getPart,
+		arg.Name,
+		arg.ParentID,
+		arg.Sku,
+		arg.ID,
+	)
 	var i Part
 	err := row.Scan(
 		&i.PartID,

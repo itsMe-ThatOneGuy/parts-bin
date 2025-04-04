@@ -29,8 +29,9 @@ OR id = $5;
 
 -- name: GetPart :one
 SELECT * FROM parts
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2);
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR sku = $3
+OR id = $4;
 
 -- name: GetPartByID :one
 SELECT * FROM parts
