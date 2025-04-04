@@ -28,7 +28,9 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if lastElem.Type == "part" {
-		err := s.DBQueries.DeletePartByID(context.Background(), lastElem.ID.UUID)
+		err := s.DBQueries.DeletePart(context.Background(), database.DeletePartParams{
+			ID: lastElem.ID.UUID,
+		})
 		if err != nil {
 			return nil
 		}

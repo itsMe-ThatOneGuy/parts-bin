@@ -23,9 +23,9 @@ WHERE id = $1;
 
 -- name: DeletePart :exec
 DELETE FROM parts
-WHERE
-    (name = $1 AND part_id = $2AND parent_id = $3) 
-    OR sku = $4;
+WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 
+OR sku = $4
+OR id = $5;
 
 -- name: GetPart :one
 SELECT * FROM parts

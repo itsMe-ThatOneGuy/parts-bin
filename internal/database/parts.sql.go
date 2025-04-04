@@ -61,9 +61,9 @@ func (q *Queries) CreateSku(ctx context.Context, arg CreateSkuParams) error {
 
 const deletePart = `-- name: DeletePart :exec
 DELETE FROM parts
-WHERE
-    (name = $1 AND part_id = $2AND parent_id = $3) 
-    OR sku = $4
+WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 
+OR sku = $4
+OR id = $5
 `
 
 type DeletePartParams struct {
@@ -71,6 +71,7 @@ type DeletePartParams struct {
 	PartID   int32
 	ParentID uuid.UUID
 	Sku      sql.NullString
+	ID       uuid.UUID
 }
 
 func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
@@ -79,6 +80,7 @@ func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 		arg.PartID,
 		arg.ParentID,
 		arg.Sku,
+		arg.ID,
 	)
 	return err
 }
