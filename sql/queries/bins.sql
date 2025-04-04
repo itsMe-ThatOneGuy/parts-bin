@@ -14,8 +14,8 @@ DELETE FROM bins;
 
 -- name: GetBin :one
 SELECT * FROM bins
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2);
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR id = $3;
 
 -- name: GetBinsByParent :many
 SELECT * FROM bins

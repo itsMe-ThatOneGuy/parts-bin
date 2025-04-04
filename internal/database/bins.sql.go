@@ -69,17 +69,18 @@ func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) error {
 
 const getBin = `-- name: GetBin :one
 SELECT id, created_at, updated_at, name, parent_id, parent_id_or_null FROM bins
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR id = $3
 `
 
 type GetBinParams struct {
 	Name     string
 	ParentID uuid.NullUUID
+	ID       uuid.UUID
 }
 
 func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentID)
+	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentID, arg.ID)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
