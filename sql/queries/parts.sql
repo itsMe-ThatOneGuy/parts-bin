@@ -17,10 +17,6 @@ WHERE part_id = $1;
 SELECT * FROM parts 
 WHERE parent_id = $1;
 
--- name: DeletePartByID :exec
-DELETE FROM parts
-WHERE id = $1;
-
 -- name: DeletePart :exec
 DELETE FROM parts
 WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 
@@ -32,10 +28,6 @@ SELECT * FROM parts
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
 OR sku = $3
 OR id = $4;
-
--- name: GetPartByID :one
-SELECT * FROM parts
-WHERE id = $1;
 
 -- name: UpdatePartParent :exec
 UPDATE parts SET parent_id = $2, updated_at = NOW()

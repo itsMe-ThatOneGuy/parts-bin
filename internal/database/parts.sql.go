@@ -85,16 +85,6 @@ func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 	return err
 }
 
-const deletePartByID = `-- name: DeletePartByID :exec
-DELETE FROM parts
-WHERE id = $1
-`
-
-func (q *Queries) DeletePartByID(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deletePartByID, id)
-	return err
-}
-
 const getPart = `-- name: GetPart :one
 SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
@@ -116,26 +106,6 @@ func (q *Queries) GetPart(ctx context.Context, arg GetPartParams) (Part, error) 
 		arg.Sku,
 		arg.ID,
 	)
-	var i Part
-	err := row.Scan(
-		&i.PartID,
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Name,
-		&i.Sku,
-		&i.ParentID,
-	)
-	return i, err
-}
-
-const getPartByID = `-- name: GetPartByID :one
-SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
-WHERE id = $1
-`
-
-func (q *Queries) GetPartByID(ctx context.Context, id uuid.UUID) (Part, error) {
-	row := q.db.QueryRowContext(ctx, getPartByID, id)
 	var i Part
 	err := row.Scan(
 		&i.PartID,
