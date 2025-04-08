@@ -16,7 +16,8 @@ import (
 func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
 
-	pathSlice := utils.ParseInputPath(args[0])
+	path := args[0]
+	pathSlice := utils.ParseInputPath(path)
 
 	lastElem, err := utils.GetLastElement(s, pathSlice)
 	if err != nil {
@@ -46,6 +47,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 		Name:     lastElem.Name,
 		ID:       lastElem.ID,
 		ParentID: lastElem.ParentID,
+		Path:     lastElem.Path,
 	}
 
 	var queue []models.Bin

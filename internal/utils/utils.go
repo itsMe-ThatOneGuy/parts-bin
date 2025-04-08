@@ -63,6 +63,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 						Sku:      part.Sku.String,
 						ID:       uuid.NullUUID{Valid: true, UUID: part.ID},
 						ParentID: parentID,
+						Path:     strings.Join(path[:], "/"),
 					}
 
 					return last, nil
@@ -73,6 +74,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 					Name:     e,
 					ID:       uuid.NullUUID{Valid: false},
 					ParentID: parentID,
+					Path:     strings.Join(path[:], "/"),
 				}
 
 				return last, nil
@@ -87,6 +89,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 				Name:     e,
 				ID:       uuid.NullUUID{Valid: true, UUID: bin.ID},
 				ParentID: parentID,
+				Path:     strings.Join(path[:], "/"),
 			}
 
 			return last, nil
@@ -99,7 +102,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	return models.Element{}, nil
 }
 
-func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) {
+func GetChildBins(s *state.State, path string, parentID uuid.NullUUID) ([]models.Bin, error) {
 	bins, err := s.DBQueries.GetBinsByParent(context.Background(), parentID)
 	if err != nil {
 		return nil, err
@@ -111,21 +114,22 @@ func GetChildBins(s *state.State, parentID uuid.NullUUID) ([]models.Bin, error) 
 			Name:     e.Name,
 			ID:       uuid.NullUUID{Valid: true, UUID: e.ID},
 			ParentID: e.ParentID,
+			Path:     path + "/" + e.Name,
 		}
 	}
 
 	return binList, nil
 }
 
-func QueueBins(s *state.State, parentID uuid.NullUUID, queue *[]models.Bin) error {
-	bins, err := GetChildBins(s, parentID)
+func QueueBins(s *state.State, path string, parentID uuid.NullUUID, queue *[]models.Bin) error {
+	bins, err := GetChildBins(s, path, parentID)
 	if err != nil {
 		return err
 	}
 
 	for _, bin := range bins {
 		*queue = append(*queue, bin)
-		if err := QueueBins(s, bin.ID, queue); err != nil {
+		if err := QueueBins(s, path, bin.ID, queue); err != nil {
 			return err
 		}
 	}
