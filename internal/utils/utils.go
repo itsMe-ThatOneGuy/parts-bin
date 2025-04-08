@@ -46,7 +46,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	for i, e := range path {
 		isLast := i == len(path)-1
 
-		bin, err := s.DBQueries.GetBin(context.TODO(), database.GetBinParams{
+		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
 			Name:     e,
 			ParentID: parentID,
 		})
