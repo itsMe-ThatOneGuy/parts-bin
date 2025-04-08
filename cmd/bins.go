@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -29,8 +28,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 			})
 			if err != nil {
 				if !lastEle && !p {
-					msg := fmt.Sprintf("mkbin: cannot create bin '%s': no such parent bin", e)
-					return errors.New(msg)
+					return fmt.Errorf("cannot create bin '%s': No such parent bin", e)
 				}
 
 				newBin, err := s.DBQueries.CreateBin(context.Background(), database.CreateBinParams{
@@ -38,21 +36,20 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 					ParentID: parentID,
 				})
 				if err != nil {
-					msg := fmt.Sprintf("issue creating '%s' bin: %v", e, err)
-					return errors.New(msg)
+					return fmt.Errorf("issue creating bin '%s': %v", e, err)
 				}
 
 				parentID = uuid.NullUUID{Valid: true, UUID: newBin.ID}
 
 				if v {
-					fmt.Printf("bin '%s' created\n", newBin.Name)
+					fmt.Printf("created bin '%s'\n", newBin.Name)
 				}
 
 			} else {
 				parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
 
 				if v {
-					fmt.Printf("bin '%s' already created\n", bin.Name)
+					fmt.Printf("cannot create bin '%s': bin exists\n", bin.Name)
 				}
 
 			}
@@ -70,7 +67,7 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if v {
-		fmt.Printf("bin '%s' created\n", bin.Name)
+		fmt.Printf("created bin '%s'\n", bin.Name)
 	}
 
 	return nil

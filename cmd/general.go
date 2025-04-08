@@ -24,7 +24,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if lastElem.Type == "unknown" {
-		return errors.New("last element not identified")
+		return fmt.Errorf("cannot remove '%s': No such part or bin", lastElem.Name)
 	}
 
 	if lastElem.Type == "part" {
@@ -36,7 +36,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 		}
 
 		if v {
-			fmt.Printf("deleting part: '%s'\n", lastElem.Name)
+			fmt.Printf("removed part '%s'\n", path)
 		}
 
 		return nil
@@ -50,7 +50,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 
 	var queue []models.Bin
 
-	if err := utils.QueueBins(s, lastElem.ID, &queue); err != nil {
+	if err := utils.QueueBins(s, path, lastElem.ID, &queue); err != nil {
 		return err
 	}
 
@@ -63,11 +63,13 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 				parts, _ := s.DBQueries.GetPartsByParent(context.Background(), e.ID.UUID)
 				if len(parts) >= 1 {
 					for _, part := range parts {
-						fmt.Printf("deleting part: '%s'\n", part.Name)
+						partName := e.Path + "/" + part.Name
+						fmt.Printf("removed part: '%s'\n", partName)
 					}
 				}
-				fmt.Printf("deleting bin: '%s'\n", e.Name)
+				fmt.Printf("removed bin: '%s'\n", e.Path)
 			}
+
 			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
 				ID: e.ID.UUID,
 			})
@@ -101,7 +103,7 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if v {
-		fmt.Printf("deleting bin: '%s'\n", thisBin.Name)
+		fmt.Printf("removed bin: '%s'\n", path)
 	}
 
 	return nil
