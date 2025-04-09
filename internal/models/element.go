@@ -7,6 +7,8 @@ type Element struct {
 	Name       string
 	Sku        string
 	ID         uuid.NullUUID
+	CreatedAt  string
+	UpdatedAt  string
 	ParentName string
 	ParentID   uuid.NullUUID
 	Path       string
