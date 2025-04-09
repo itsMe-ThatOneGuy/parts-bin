@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 
 	"github.com/google/uuid"
@@ -42,9 +43,34 @@ func ValidateFlags(flags map[string]struct{}, key string) bool {
 }
 
 func GetLastElement(s *state.State, path []string) (models.Element, error) {
+	pathLen := len(path)
+
+	if pathLen == 1 {
+		sku := path[0]
+		part, err := s.DBQueries.GetPart(context.Background(), database.GetPartParams{
+			Sku: sql.NullString{
+				String: sku,
+				Valid:  true,
+			},
+		})
+		if err == nil {
+			last := models.Element{
+				Type:      "part",
+				Name:      part.Name,
+				Sku:       part.Sku.String,
+				ID:        uuid.NullUUID{Valid: true, UUID: part.ID},
+				ParentID:  uuid.NullUUID{Valid: true, UUID: part.ParentID},
+				CreatedAt: part.CreatedAt.String(),
+				UpdatedAt: part.UpdatedAt.String(),
+			}
+
+			return last, nil
+		}
+	}
+
 	parentID := uuid.NullUUID{Valid: false}
 	for i, e := range path {
-		isLast := i == len(path)-1
+		isLast := i == pathLen-1
 
 		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
 			Name:     e,
