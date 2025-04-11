@@ -232,7 +232,12 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 	}
 
 	if lastElem.Type == "part" {
-		fmt.Println("PRINT PART DETAILS")
+		fmt.Printf("%s\n", lastElem.Name)
+		fmt.Printf("- Sku:\t\t %s\n", lastElem.Sku)
+		fmt.Printf("- ID:\t\t %v\n", lastElem.ID.UUID)
+		fmt.Printf("- Created:\t %s\n", lastElem.CreatedAt)
+		fmt.Printf("- Last Update:\t %s\n", lastElem.UpdatedAt)
+		fmt.Print("\n")
 		return nil
 	}
 
