@@ -287,6 +287,12 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 
 	}
 
+	if len(srcSlice) > 0 {
+		fmt.Printf("Bin(s): %d Part(s): %d\n", len(bins), len(parts))
+	} else {
+		fmt.Printf("Bin(s): %d\n", len(bins))
+	}
+
 	if len(bins) > 0 {
 		fmt.Println("----------")
 		fmt.Println("Bins:")
@@ -296,7 +302,6 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 			fmt.Println()
 		}
 		fmt.Println(binString)
-		fmt.Println()
 	}
 	if len(parts) > 0 {
 		fmt.Println("----------")
@@ -307,7 +312,6 @@ func Ls(s *state.State, flags map[string]struct{}, args []string) error {
 			fmt.Println()
 		}
 		fmt.Println(partString)
-		fmt.Println()
 	}
 
 	return nil
