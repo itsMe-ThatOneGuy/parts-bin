@@ -52,21 +52,3 @@ func CreatePart(s *state.State, flags map[string]struct{}, args []string) error 
 
 	return nil
 }
-
-func GetPart(s *state.State, flags map[string]struct{}, args []string) error {
-	pathSlice := utils.ParseInputPath(args[0])
-
-	lastElem, err := utils.GetLastElement(s, pathSlice)
-	if err != nil {
-		return err
-	}
-
-	part, err := s.DBQueries.GetPartByID(context.Background(), lastElem.ID.UUID)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(part)
-
-	return nil
-}
