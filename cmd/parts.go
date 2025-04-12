@@ -12,6 +12,8 @@ import (
 )
 
 func CreatePart(s *state.State, flags map[string]struct{}, args []string) error {
+	v := utils.ValidateFlags(flags, "v")
+
 	pathSlice := utils.ParseInputPath(args[0])
 	pathLen := len(pathSlice)
 	part := pathSlice[pathLen-1]
@@ -48,6 +50,10 @@ func CreatePart(s *state.State, flags map[string]struct{}, args []string) error 
 	})
 	if err != nil {
 		return nil
+	}
+
+	if v {
+		fmt.Printf("created part '%s'\n", dbPart.Name)
 	}
 
 	return nil
