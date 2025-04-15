@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
@@ -16,6 +17,7 @@ import (
 func Rm(s *state.State, flags map[string]string, args []string) error {
 	r, _ := utils.ValidateFlags(flags, "r")
 	v, _ := utils.ValidateFlags(flags, "v")
+	q, qVal := utils.ValidateFlags(flags, "q")
 
 	path := args[0]
 	pathSlice := utils.ParseInputPath(path)
@@ -30,6 +32,21 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	if lastElem.Type == "part" {
+		if q {
+			num, err := strconv.ParseInt(qVal, 10, 32)
+			if err != nil {
+				return err
+			}
+
+			err = s.DBQueries.DeleteManyParts(context.Background(), database.DeleteManyPartsParams{
+				Name:     lastElem.Name,
+				ParentID: lastElem.ParentID.UUID,
+				Limit:    int32(num),
+			})
+
+			return nil
+		}
+
 		err := s.DBQueries.DeletePart(context.Background(), database.DeletePartParams{
 			ID: lastElem.ID.UUID,
 		})
