@@ -59,6 +59,27 @@ func (q *Queries) CreateSku(ctx context.Context, arg CreateSkuParams) error {
 	return err
 }
 
+const deleteManyParts = `-- name: DeleteManyParts :exec
+WITH to_delete AS (
+    SELECT p.id FROM parts p
+    WHERE p.name = $1 AND p.parent_id = $2
+    LIMIT $3
+)
+DELETE FROM parts
+WHERE id IN (SELECT id FROM to_delete)
+`
+
+type DeleteManyPartsParams struct {
+	Name     string
+	ParentID uuid.UUID
+	Limit    int32
+}
+
+func (q *Queries) DeleteManyParts(ctx context.Context, arg DeleteManyPartsParams) error {
+	_, err := q.db.ExecContext(ctx, deleteManyParts, arg.Name, arg.ParentID, arg.Limit)
+	return err
+}
+
 const deletePart = `-- name: DeletePart :exec
 DELETE FROM parts
 WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 

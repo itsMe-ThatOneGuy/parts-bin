@@ -23,6 +23,15 @@ WHERE (name = $1 AND part_id = $2 AND parent_id = $3)
 OR sku = $4
 OR id = $5;
 
+-- name: DeleteManyParts :exec
+WITH to_delete AS (
+    SELECT p.id FROM parts p
+    WHERE p.name = $1 AND p.parent_id = $2
+    LIMIT $3
+)
+DELETE FROM parts
+WHERE id IN (SELECT id FROM to_delete);
+
 -- name: GetPart :one
 SELECT * FROM parts
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
