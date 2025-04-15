@@ -83,7 +83,7 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	if v {
-		fmt.Printf("created part '%s'\n", dbPart.Name)
+		fmt.Printf("part: created part '%s'\n", dbPart.Name)
 	}
 
 	return nil

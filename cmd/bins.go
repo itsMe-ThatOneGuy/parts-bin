@@ -50,7 +50,7 @@ func CreateBin(s *state.State, flags map[string]string, args []string) error {
 				parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
 
 				if v {
-					fmt.Printf("cannot create bin '%s': bin exists\n", bin.Name)
+					fmt.Printf("bin: cannot create bin '%s': bin exists\n", bin.Name)
 				}
 
 			}
@@ -68,7 +68,7 @@ func CreateBin(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	if v {
-		fmt.Printf("created bin '%s'\n", bin.Name)
+		fmt.Printf("bin: created bin '%s'\n", bin.Name)
 	}
 
 	return nil
