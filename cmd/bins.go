@@ -72,25 +72,3 @@ func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
 
 	return nil
 }
-
-func GetBin(s *state.State, flags map[string]struct{}, args []string) error {
-	srcSlice := utils.ParseInputPath(args[0])
-	lastElem, err := utils.GetLastElement(s, srcSlice)
-	if err != nil {
-		return err
-	}
-
-	bins, err := s.DBQueries.GetBinsByParent(context.Background(), uuid.NullUUID{
-		Valid: true,
-		UUID:  lastElem.ID.UUID,
-	})
-	if err != nil {
-		return err
-	}
-
-	for _, e := range bins {
-		fmt.Println(e.Name)
-	}
-
-	return nil
-}
