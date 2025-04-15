@@ -7,7 +7,7 @@ import (
 type Command struct {
 	Name        string
 	Description string
-	Callback    func(*state.State, map[string]struct{}, []string) error
+	Callback    func(*state.State, map[string]string, []string) error
 }
 
 func Commands() map[string]Command {

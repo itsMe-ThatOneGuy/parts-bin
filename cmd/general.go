@@ -13,8 +13,9 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
 
-func Rm(s *state.State, flags map[string]struct{}, args []string) error {
-	r, v := utils.ValidateFlags(flags, "r"), utils.ValidateFlags(flags, "v")
+func Rm(s *state.State, flags map[string]string, args []string) error {
+	r, _ := utils.ValidateFlags(flags, "r")
+	v, _ := utils.ValidateFlags(flags, "v")
 
 	path := args[0]
 	pathSlice := utils.ParseInputPath(path)
@@ -111,8 +112,8 @@ func Rm(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
-func Mv(s *state.State, flags map[string]struct{}, args []string) error {
-	v := utils.ValidateFlags(flags, "v")
+func Mv(s *state.State, flags map[string]string, args []string) error {
+	v, _ := utils.ValidateFlags(flags, "v")
 
 	srcPath := args[0]
 	destPath := args[1]
@@ -214,8 +215,9 @@ func Mv(s *state.State, flags map[string]struct{}, args []string) error {
 	return nil
 }
 
-func Ls(s *state.State, flags map[string]struct{}, args []string) error {
-	l := utils.ValidateFlags(flags, "l")
+func Ls(s *state.State, flags map[string]string, args []string) error {
+	l, _ := utils.ValidateFlags(flags, "l")
+	//q, qValue := utils.ValidateFlags(flags, "q")
 
 	srcSlice := args
 	if len(args) > 0 {

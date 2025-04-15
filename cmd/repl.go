@@ -28,7 +28,7 @@ func Repl(s *state.State) {
 		}
 
 		hasFlags := false
-		flags := make(map[string]struct{})
+		flags := make(map[string]string)
 		if len(input) > 1 {
 			if strings.HasPrefix(input[1], "-") {
 				flags = utils.ParseFlags(input, &hasFlags)

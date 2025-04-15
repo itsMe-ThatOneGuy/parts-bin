@@ -23,7 +23,7 @@ func ParseInputPath(path string) (pathSlice []string) {
 	return splitSlice
 }
 
-func ParseFlags(input []string, flagBool *bool) map[string]struct{} {
+func ParseFlagsOLD(input []string, flagBool *bool) map[string]struct{} {
 	flags := make(map[string]struct{})
 
 	if strings.HasPrefix(input[1], "-") {
@@ -37,9 +37,43 @@ func ParseFlags(input []string, flagBool *bool) map[string]struct{} {
 	return flags
 }
 
-func ValidateFlags(flags map[string]struct{}, key string) bool {
+func ParseFlags(input []string, flagBool *bool) map[string]string {
+	flags := make(map[string]string)
+
+	if strings.HasPrefix(input[1], "-") {
+		*flagBool = true
+		raw := input[1][1:]
+
+		for i := 0; i < len(raw); i++ {
+			e := raw[i]
+			if e == 'q' {
+				start := i + 1
+				end := start
+
+				for end < len(raw) && raw[end] >= '0' && raw[end] <= '9' {
+					end++
+				}
+				if end > start {
+					flags["q"] = raw[start:end]
+					i = end - 1
+				}
+			} else {
+				flags[string(e)] = "true"
+			}
+		}
+	}
+
+	return flags
+}
+
+func ValidateFlagsOLD(flags map[string]struct{}, key string) bool {
 	_, exists := flags[key]
 	return exists
+}
+
+func ValidateFlags(flags map[string]string, key string) (bool, string) {
+	value, exists := flags[key]
+	return exists, value
 }
 
 func GetLastElement(s *state.State, path []string) (models.Element, error) {

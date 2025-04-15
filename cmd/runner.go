@@ -13,7 +13,7 @@ func RunCommand(s *state.State) {
 	cmdName := input[0]
 
 	hasFlags := false
-	flags := make(map[string]struct{})
+	flags := make(map[string]string)
 	if len(input) > 1 {
 		flags = utils.ParseFlags(input, &hasFlags)
 	}

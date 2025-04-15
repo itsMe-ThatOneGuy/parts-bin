@@ -11,8 +11,8 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
 
-func CreatePart(s *state.State, flags map[string]struct{}, args []string) error {
-	v := utils.ValidateFlags(flags, "v")
+func CreatePart(s *state.State, flags map[string]string, args []string) error {
+	v, _ := utils.ValidateFlags(flags, "v")
 
 	pathSlice := utils.ParseInputPath(args[0])
 	pathLen := len(pathSlice)

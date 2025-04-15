@@ -10,8 +10,9 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
 
-func CreateBin(s *state.State, flags map[string]struct{}, args []string) error {
-	p, v := utils.ValidateFlags(flags, "p"), utils.ValidateFlags(flags, "v")
+func CreateBin(s *state.State, flags map[string]string, args []string) error {
+	p, _ := utils.ValidateFlags(flags, "p")
+	v, _ := utils.ValidateFlags(flags, "v")
 
 	pathSlice := utils.ParseInputPath(args[0])
 
