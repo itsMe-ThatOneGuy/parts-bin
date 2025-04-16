@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
@@ -17,21 +17,9 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 	q, qVal := utils.ValidateFlags(flags, "q")
 
 	pathSlice := utils.ParseInputPath(args[0])
-	pathLen := len(pathSlice)
-	part := pathSlice[pathLen-1]
-	pathSlice = pathSlice[:pathLen-1]
-
-	parentID := uuid.NullUUID{Valid: false}
-	for _, e := range pathSlice {
-		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
-			Name:     e,
-			ParentID: parentID,
-		})
-		if err != nil {
-			return err
-		}
-
-		parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+	last, err := utils.GetLastElement(s, pathSlice)
+	if err != nil {
+		return err
 	}
 
 	if q {
@@ -41,17 +29,17 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 		}
 
 		for i := 0; i < int(num); i++ {
-			dbPart, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
-				Name:     part,
-				ParentID: parentID.UUID,
+			part, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
+				Name:     last.Name,
+				ParentID: last.ParentID.UUID,
 			})
 			if err != nil {
 				return err
 			}
 
-			partSku := fmt.Sprintf("%s-%d", dbPart.Name, dbPart.PartID)
+			partSku := fmt.Sprintf("%s-%d", part.Name, part.PartID)
 			err = s.DBQueries.CreateSku(context.Background(), database.CreateSkuParams{
-				PartID: dbPart.PartID,
+				PartID: part.PartID,
 				Sku: sql.NullString{
 					String: partSku,
 					Valid:  true,
@@ -59,20 +47,24 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 			})
 		}
 
+		if v {
+			fmt.Printf("part: created part '%s' x%d\n", last.Name, int(num))
+		}
+
 		return nil
 	}
 
-	dbPart, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
-		Name:     part,
-		ParentID: parentID.UUID,
+	part, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
+		Name:     last.Name,
+		ParentID: last.ParentID.UUID,
 	})
 	if err != nil {
 		return err
 	}
 
-	partSku := fmt.Sprintf("%s-%d", dbPart.Name, dbPart.PartID)
+	partSku := fmt.Sprintf("%s-%d", part.Name, part.PartID)
 	err = s.DBQueries.CreateSku(context.Background(), database.CreateSkuParams{
-		PartID: dbPart.PartID,
+		PartID: part.PartID,
 		Sku: sql.NullString{
 			String: partSku,
 			Valid:  true,
@@ -83,7 +75,7 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	if v {
-		fmt.Printf("part: created part '%s'\n", dbPart.Name)
+		fmt.Printf("part: created part '%s'\n", part.Name)
 	}
 
 	return nil
