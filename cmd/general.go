@@ -12,6 +12,7 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
+	"github.com/savioxavier/termlink"
 )
 
 func Rm(s *state.State, flags map[string]string, args []string) error {
