@@ -15,6 +15,51 @@ import (
 	"github.com/savioxavier/termlink"
 )
 
+func Help(s *state.State, flags map[string]string, args []string) error {
+	link := termlink.Link("itsMe-ThatOneGuy", "https://github.com/itsMe-ThatOneGuy")
+	sig := fmt.Sprintf("Created By %s", link)
+
+	helpMsg := `
+Parts_Bin - A CLI tool to organize and track 'Parts' in storage 'Bins'
+
+Usage:
+	- runner:		partsbin <command> [flags] [arguments]
+	- repel:		partsbin
+
+Available Commands:
+	help						Show this help message
+	mkbin [-flag] <path>		Create a new bin at given path
+	mkprt [-flag] <path>		Create a part at given path	
+	ls [-flag] <path>			List parts and bins at provided path
+	rm [-flag] <path>			Remove a part or bin
+	mv [-flag] <src> <dest>		Move a part or bin / Can be used to rename
+
+Commands support their own flags. Use the -h flag to see command details.`
+
+	icon := `
+		
+
+			   ⣀⡤⠚⠋⠉⠉⠛⠒⢤⡀⠀⠀⠀
+			  ⣠⠏⠁⠀⠀⠀⠀⠀⠀⠈⠳⡄⠀⠀
+			⠀⢠⠇⠀⣤⣶⣤⡀⢠⣶⣦⡄⠀⢱⠀⠀
+			⠀⣞⠀⠀⢿⣿⡿⠃⠹⣿⣿⠇⠀⠘⡇⠀
+			⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀
+			⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀
+			⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
+			⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧
+			⢻⠀⠀⣀⡀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⣿
+			⠘⠦⠖⠋⠓⠤⠴⠒⠳⢤⡤⠖⠒⢦⣠⠏
+
+
+`
+
+	fmt.Println(helpMsg)
+	fmt.Println(sig)
+	fmt.Println(icon)
+
+	return nil
+}
+
 func Rm(s *state.State, flags map[string]string, args []string) error {
 	r, _ := utils.ValidateFlags(flags, "r")
 	v, _ := utils.ValidateFlags(flags, "v")

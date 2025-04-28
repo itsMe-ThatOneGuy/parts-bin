@@ -12,6 +12,11 @@ type Command struct {
 
 func Commands() map[string]Command {
 	return map[string]Command{
+		"help": {
+			Name:        "help",
+			Description: "Display the help message",
+			Callback:    Help,
+		},
 		"mkbin": {
 			Name:        "mkbin",
 			Description: "Create a bin in provided path",
