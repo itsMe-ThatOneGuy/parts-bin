@@ -12,13 +12,13 @@ type Command struct {
 
 func Commands() map[string]Command {
 	return map[string]Command{
-		"bin": {
-			Name:        "bin",
+		"mkbin": {
+			Name:        "mkbin",
 			Description: "Create a bin in provided path",
 			Callback:    CreateBin,
 		},
-		"part": {
-			Name:        "part",
+		"mkprt": {
+			Name:        "mkprt",
 			Description: "Create a part in provided path",
 			Callback:    CreatePart,
 		},
