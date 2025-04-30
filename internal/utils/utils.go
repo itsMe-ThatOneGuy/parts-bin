@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"database/sql"
+	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
@@ -180,4 +181,30 @@ func QueueBins(s *state.State, path string, parentID uuid.NullUUID, queue *[]mod
 	}
 
 	return nil
+}
+
+func AbbrevName(name string) string {
+	normalized := regexp.MustCompile(`\W`).ReplaceAllString(name, "_")
+	words := strings.Split(normalized, "_")
+
+	var abbrev string
+	if len(words) > 1 {
+		loopLen := len(words)
+		if loopLen > 3 {
+			loopLen = 3
+		}
+
+		for i := 0; i < loopLen; i++ {
+			word := words[i]
+			clnWord := regexp.MustCompile(`\d`).ReplaceAllString(word, "")
+			if len(clnWord) > 0 {
+				abbrev += string(clnWord[0])
+			}
+		}
+	} else {
+		cleaned := regexp.MustCompile(`\d`).ReplaceAllString(name, "")
+		abbrev = cleaned[:3]
+	}
+
+	return abbrev
 }
