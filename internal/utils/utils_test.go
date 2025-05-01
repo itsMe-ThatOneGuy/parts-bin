@@ -17,11 +17,11 @@ func TestParseInputPath(t *testing.T) {
 }
 
 func TestValidateFlags(t *testing.T) {
-	flags := make(map[string]struct{})
-	flags["t"] = struct{}{}
+	flags := make(map[string]string)
+	flags["t"] = "true"
 
-	existsTrue := ValidateFlags(flags, "t")
-	existsFalse := ValidateFlags(flags, "f")
+	existsTrue, _ := ValidateFlags(flags, "t")
+	existsFalse, _ := ValidateFlags(flags, "f")
 
 	if !existsTrue {
 		t.Errorf("existsTrue was false when it should of been true")
