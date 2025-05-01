@@ -31,3 +31,18 @@ func TestValidateFlags(t *testing.T) {
 		t.Errorf("existsFalse was true when it should of been false")
 	}
 }
+
+func TestAbbrevName(t *testing.T) {
+	name := "test"
+	abbrev := AbbrevName(name)
+	name1 := "test-abbrev-name-test"
+	abbrev1 := AbbrevName(name1)
+
+	if abbrev != "tes" {
+		t.Errorf("abbrev for 'test' did not match 'tes'")
+	}
+
+	if abbrev1 != "tan" {
+		t.Errorf("abbrev for 'test-abbrev-name-test' did not match 'tan'")
+	}
+}
