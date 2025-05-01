@@ -27,7 +27,7 @@ func RunCommand(s *state.State) {
 	if ok {
 		err := command.Callback(s, flags, args)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("%s: %v\n", cmdName, err)
 		}
 	} else {
 		fmt.Println("Unknown Command")
