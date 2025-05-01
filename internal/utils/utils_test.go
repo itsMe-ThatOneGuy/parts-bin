@@ -33,16 +33,16 @@ func TestValidateFlags(t *testing.T) {
 }
 
 func TestAbbrevName(t *testing.T) {
-	name := "test"
+	name := "part"
 	abbrev := AbbrevName(name)
 	name1 := "test-abbrev-name-test"
 	abbrev1 := AbbrevName(name1)
 
-	if abbrev != "tes" {
+	if abbrev != "PAR" {
 		t.Errorf("abbrev for 'test' did not match 'tes'")
 	}
 
-	if abbrev1 != "tan" {
+	if abbrev1 != "TAN" {
 		t.Errorf("abbrev for 'test-abbrev-name-test' did not match 'tan'")
 	}
 }

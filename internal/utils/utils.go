@@ -206,5 +206,5 @@ func AbbrevName(name string) string {
 		abbrev = cleaned[:3]
 	}
 
-	return abbrev
+	return strings.ToUpper(abbrev)
 }
