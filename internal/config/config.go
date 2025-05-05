@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -19,10 +20,13 @@ func Read() (Config, error) {
 
 	configFilePath := filepath.Join(configDirPath, ConfigFile)
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		fmt.Println("Creating default config file")
 		err = os.WriteFile(configFilePath, []byte(DefaultConfig), 0644)
 		if err != nil {
 			return Config{}, err
 		}
+
+		return Config{}, fmt.Errorf("update the config at '/home/user/.confg/parts-bin'")
 	}
 
 	file, err := os.Open(configFilePath)
