@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/helptxt"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
@@ -69,6 +70,12 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 	r, _ := utils.ValidateFlags(flags, "r")
 	v, _ := utils.ValidateFlags(flags, "v")
 	q, qVal := utils.ValidateFlags(flags, "q")
+	h, _ := utils.ValidateFlags(flags, "h")
+
+	if h {
+		println(helptxt.Rm)
+		return nil
+	}
 
 	path := args[0]
 	pathSlice := utils.ParseInputPath(path)
@@ -182,6 +189,12 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 
 func Mv(s *state.State, flags map[string]string, args []string) error {
 	v, _ := utils.ValidateFlags(flags, "v")
+	h, _ := utils.ValidateFlags(flags, "h")
+
+	if h {
+		println(helptxt.Mv)
+		return nil
+	}
 
 	srcPath := args[0]
 	destPath := args[1]
@@ -285,6 +298,12 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 
 func Ls(s *state.State, flags map[string]string, args []string) error {
 	l, _ := utils.ValidateFlags(flags, "l")
+	h, _ := utils.ValidateFlags(flags, "h")
+
+	if h {
+		println(helptxt.Ls)
+		return nil
+	}
 
 	srcSlice := args
 	if len(args) > 0 {

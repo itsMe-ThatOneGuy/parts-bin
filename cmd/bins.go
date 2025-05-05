@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/helptxt"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
@@ -13,6 +14,12 @@ import (
 func CreateBin(s *state.State, flags map[string]string, args []string) error {
 	p, _ := utils.ValidateFlags(flags, "p")
 	v, _ := utils.ValidateFlags(flags, "v")
+	h, _ := utils.ValidateFlags(flags, "h")
+
+	if h {
+		println(helptxt.Mkbin)
+		return nil
+	}
 
 	pathSlice := utils.ParseInputPath(args[0])
 

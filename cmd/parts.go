@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/helptxt"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
@@ -15,6 +16,12 @@ import (
 func CreatePart(s *state.State, flags map[string]string, args []string) error {
 	v, _ := utils.ValidateFlags(flags, "v")
 	q, qVal := utils.ValidateFlags(flags, "q")
+	h, _ := utils.ValidateFlags(flags, "h")
+
+	if h {
+		println(helptxt.Mkprt)
+		return nil
+	}
 
 	pathSlice := utils.ParseInputPath(args[0])
 	last, err := utils.GetLastElement(s, pathSlice)
