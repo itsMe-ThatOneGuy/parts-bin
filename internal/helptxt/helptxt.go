@@ -1,5 +1,11 @@
 package helptxt
 
+import (
+	"fmt"
+
+	"github.com/savioxavier/termlink"
+)
+
 var Rm = `Usage: rm [-FLAGS] PATH
 
 Remove a bin or part at a specified PATh.
@@ -54,3 +60,43 @@ Flags:
 The path will always start at the root bin. Bins can have the same name as the parent bin, 
 but bins can not have the same name within the same parent.`
 
+var Help = `██████╗  █████╗ ██████╗ ████████╗███████╗      ██████╗ ██╗███╗   ██╗
+██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝      ██╔══██╗██║████╗  ██║
+██████╔╝███████║██████╔╝   ██║   ███████╗█████╗██████╔╝██║██╔██╗ ██║
+██╔═══╝ ██╔══██║██╔══██╗   ██║   ╚════██║╚════╝██╔══██╗██║██║╚██╗██║
+██║     ██║  ██║██║  ██║   ██║   ███████║      ██████╔╝██║██║ ╚████║
+╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝      ╚═════╝ ╚═╝╚═╝  ╚═══╝
+
+A CLI tool to organize and track 'Parts' in storage 'Bins'
+
+Usage:
+	- runner:		partsbin <command> [flags] [arguments]
+	- repel:		partsbin
+
+Available Commands:
+	help				Show this help message
+	mkbin [-flag] <path>		Create a new bin at given path
+	mkprt [-flag] <path>		Create a part at given path	
+	ls [-flag] <path>		List parts and bins at provided path
+	rm [-flag] <path>		Remove a part or bin
+	mv [-flag] <src> <dest>		Move a part or bin / Can be used to rename
+	exit				Leave repel mode
+
+Commands support their own flags. Use the -h flag to see command details.
+
+
+			   ⣀⡤⠚⠋⠉⠉⠛⠒⢤⡀⠀⠀⠀
+			  ⣠⠏⠁⠀⠀⠀⠀⠀⠀⠈⠳⡄⠀⠀
+			⠀⢠⠇⠀⣤⣶⣤⡀⢠⣶⣦⡄⠀⢱⠀⠀
+			⠀⣞⠀⠀⢿⣿⡿⠃⠹⣿⣿⠇⠀⠘⡇⠀
+			⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀
+			⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀
+			⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
+			⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧
+			⢻⠀⠀⣀⡀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⣿
+			⠘⠦⠖⠋⠓⠤⠴⠒⠳⢤⡤⠖⠒⢦⣠⠏
+
+`
+
+var link = termlink.Link("itsMe-ThatOneGuy", "https://github.com/itsMe-ThatOneGuy")
+var Sig = fmt.Sprintf("An %s project.", link)

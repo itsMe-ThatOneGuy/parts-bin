@@ -13,55 +13,12 @@ import (
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
-	"github.com/savioxavier/termlink"
 )
 
 func Help(s *state.State, flags map[string]string, args []string) error {
-	banner := `██████╗  █████╗ ██████╗ ████████╗███████╗      ██████╗ ██╗███╗   ██╗
-██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝      ██╔══██╗██║████╗  ██║
-██████╔╝███████║██████╔╝   ██║   ███████╗█████╗██████╔╝██║██╔██╗ ██║
-██╔═══╝ ██╔══██║██╔══██╗   ██║   ╚════██║╚════╝██╔══██╗██║██║╚██╗██║
-██║     ██║  ██║██║  ██║   ██║   ███████║      ██████╔╝██║██║ ╚████║
-╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝      ╚═════╝ ╚═╝╚═╝  ╚═══╝`
-
-	helpMsg := `A CLI tool to organize and track 'Parts' in storage 'Bins'
-
-Usage:
-	- runner:		partsbin <command> [flags] [arguments]
-	- repel:		partsbin
-
-Available Commands:
-	help				Show this help message
-	mkbin [-flag] <path>		Create a new bin at given path
-	mkprt [-flag] <path>		Create a part at given path	
-	ls [-flag] <path>		List parts and bins at provided path
-	rm [-flag] <path>		Remove a part or bin
-	mv [-flag] <src> <dest>		Move a part or bin / Can be used to rename
-	exit				Leave repel mode
-
-Commands support their own flags. Use the -h flag to see command details.`
-
-	icon := `
-			   ⣀⡤⠚⠋⠉⠉⠛⠒⢤⡀⠀⠀⠀
-			  ⣠⠏⠁⠀⠀⠀⠀⠀⠀⠈⠳⡄⠀⠀
-			⠀⢠⠇⠀⣤⣶⣤⡀⢠⣶⣦⡄⠀⢱⠀⠀
-			⠀⣞⠀⠀⢿⣿⡿⠃⠹⣿⣿⠇⠀⠘⡇⠀
-			⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀
-			⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀
-			⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
-			⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧
-			⢻⠀⠀⣀⡀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⣿
-			⠘⠦⠖⠋⠓⠤⠴⠒⠳⢤⡤⠖⠒⢦⣠⠏`
-
-	link := termlink.Link("itsMe-ThatOneGuy", "https://github.com/itsMe-ThatOneGuy")
-	sig := fmt.Sprintf("\t\t  An %s product", link)
-
-	fmt.Println("")
-	fmt.Println(banner)
-	fmt.Println(helpMsg)
-	fmt.Println(icon)
-	fmt.Println(sig)
-	fmt.Println("")
+	println(helptxt.Help)
+	println(helptxt.Sig)
+	println("")
 
 	return nil
 }
