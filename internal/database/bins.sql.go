@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ VALUES (
     $1,
     $2
 )
-RETURNING id, created_at, updated_at, name, parent_id, parent_id_or_null
+RETURNING id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null
 `
 
 type CreateBinParams struct {
@@ -33,9 +34,11 @@ func (q *Queries) CreateBin(ctx context.Context, arg CreateBinParams) (Bin, erro
 	var i Bin
 	err := row.Scan(
 		&i.ID,
+		&i.SerialNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
+		&i.Sku,
 		&i.ParentID,
 		&i.ParentIDOrNull,
 	)
@@ -69,7 +72,7 @@ func (q *Queries) DeleteBin(ctx context.Context, arg DeleteBinParams) error {
 }
 
 const getBin = `-- name: GetBin :one
-SELECT id, created_at, updated_at, name, parent_id, parent_id_or_null FROM bins
+SELECT id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null FROM bins
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
 OR id = $3
 `
@@ -85,9 +88,11 @@ func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 	var i Bin
 	err := row.Scan(
 		&i.ID,
+		&i.SerialNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
+		&i.Sku,
 		&i.ParentID,
 		&i.ParentIDOrNull,
 	)
@@ -95,7 +100,7 @@ func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
 }
 
 const getBinsByParent = `-- name: GetBinsByParent :many
-SELECT id, created_at, updated_at, name, parent_id, parent_id_or_null FROM bins
+SELECT id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null FROM bins
 WHERE (parent_id = $1 OR (parent_id IS NULL AND $1 IS NULL))
 `
 
@@ -110,9 +115,11 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) (
 		var i Bin
 		if err := rows.Scan(
 			&i.ID,
+			&i.SerialNumber,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
+			&i.Sku,
 			&i.ParentID,
 			&i.ParentIDOrNull,
 		); err != nil {
@@ -129,10 +136,11 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) (
 	return items, nil
 }
 
-const updateBinName = `-- name: UpdateBinName :exec
+const updateBinName = `-- name: UpdateBinName :one
 UPDATE bins SET name = $3, updated_at = NOW()
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2)
+RETURNING id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null
 `
 
 type UpdateBinNameParams struct {
@@ -141,9 +149,20 @@ type UpdateBinNameParams struct {
 	Name_2   string
 }
 
-func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) error {
-	_, err := q.db.ExecContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
-	return err
+func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (Bin, error) {
+	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
+	var i Bin
+	err := row.Scan(
+		&i.ID,
+		&i.SerialNumber,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Sku,
+		&i.ParentID,
+		&i.ParentIDOrNull,
+	)
+	return i, err
 }
 
 const updateBinParent = `-- name: UpdateBinParent :exec
@@ -160,5 +179,20 @@ type UpdateBinParentParams struct {
 
 func (q *Queries) UpdateBinParent(ctx context.Context, arg UpdateBinParentParams) error {
 	_, err := q.db.ExecContext(ctx, updateBinParent, arg.Name, arg.ParentID, arg.ParentID_2)
+	return err
+}
+
+const updateBinSku = `-- name: UpdateBinSku :exec
+UPDATE bins SET sku = $2
+WHERE id = $1
+`
+
+type UpdateBinSkuParams struct {
+	ID  uuid.UUID
+	Sku sql.NullString
+}
+
+func (q *Queries) UpdateBinSku(ctx context.Context, arg UpdateBinSkuParams) error {
+	_, err := q.db.ExecContext(ctx, updateBinSku, arg.ID, arg.Sku)
 	return err
 }
