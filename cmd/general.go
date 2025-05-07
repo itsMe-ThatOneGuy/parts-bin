@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"slices"
@@ -196,17 +197,28 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 
 	if elementName != srcElement.Name {
 		if srcElement.Type == "part" {
-			err := s.DBQueries.UpdatePartName(context.Background(), database.UpdatePartNameParams{
+			part, err := s.DBQueries.UpdatePartName(context.Background(), database.UpdatePartNameParams{
 				ID:   srcElement.ID.UUID,
 				Name: elementName,
 			})
 			if err != nil {
 				return err
 			}
+
+			abbrevName := utils.AbbrevName(part.Name)
+			partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
+			err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
+				ID: part.ID,
+				Sku: sql.NullString{
+					String: partSku,
+					Valid:  true,
+				},
+			})
+
 		}
 
 		if srcElement.Type == "bin" {
-			err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
+			bin, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
 				Name:     srcElement.Name,
 				ParentID: srcElement.ParentID,
 				Name_2:   elementName,
@@ -214,6 +226,14 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 			if err != nil {
 				return err
 			}
+
+			abbrevName := utils.AbbrevName(bin.Name)
+			binSku := fmt.Sprintf("%s-%04d", abbrevName, bin.SerialNumber.Int32)
+			err = s.DBQueries.UpdateBinSku(context.Background(), database.UpdateBinSkuParams{
+				ID:  bin.ID,
+				Sku: sql.NullString{Valid: true, String: binSku},
+			})
+
 		}
 	}
 
