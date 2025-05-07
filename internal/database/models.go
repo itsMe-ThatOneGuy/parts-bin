@@ -13,9 +13,11 @@ import (
 
 type Bin struct {
 	ID             uuid.UUID
+	SerialNumber   sql.NullInt32
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	Name           string
+	Sku            sql.NullString
 	ParentID       uuid.NullUUID
 	ParentIDOrNull uuid.NullUUID
 }
