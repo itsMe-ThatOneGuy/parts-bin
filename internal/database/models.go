@@ -23,11 +23,11 @@ type Bin struct {
 }
 
 type Part struct {
-	PartID    int32
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Name      string
-	Sku       sql.NullString
-	ParentID  uuid.UUID
+	ID           uuid.UUID
+	SerialNumber sql.NullInt32
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Name         string
+	Sku          sql.NullString
+	ParentID     uuid.UUID
 }

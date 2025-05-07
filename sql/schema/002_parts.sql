@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE parts (
-    part_id SERIAL PRIMARY KEY,
-    id UUID UNIQUE NOT NULL,
+    id UUID PRIMARY KEY,
+    serial_number SERIAL UNIQUE,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     name TEXT NOT NULL,

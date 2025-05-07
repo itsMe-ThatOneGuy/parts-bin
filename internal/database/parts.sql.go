@@ -21,7 +21,7 @@ VALUES (
     $1,
     $2
 )
-RETURNING part_id, id, created_at, updated_at, name, sku, parent_id
+RETURNING id, serial_number, created_at, updated_at, name, sku, parent_id
 `
 
 type CreatePartParams struct {
@@ -33,8 +33,8 @@ func (q *Queries) CreatePart(ctx context.Context, arg CreatePartParams) (Part, e
 	row := q.db.QueryRowContext(ctx, createPart, arg.Name, arg.ParentID)
 	var i Part
 	err := row.Scan(
-		&i.PartID,
 		&i.ID,
+		&i.SerialNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
@@ -42,21 +42,6 @@ func (q *Queries) CreatePart(ctx context.Context, arg CreatePartParams) (Part, e
 		&i.ParentID,
 	)
 	return i, err
-}
-
-const createSku = `-- name: CreateSku :exec
-UPDATE parts SET sku = $2
-WHERE part_id = $1
-`
-
-type CreateSkuParams struct {
-	PartID int32
-	Sku    sql.NullString
-}
-
-func (q *Queries) CreateSku(ctx context.Context, arg CreateSkuParams) error {
-	_, err := q.db.ExecContext(ctx, createSku, arg.PartID, arg.Sku)
-	return err
 }
 
 const deleteManyParts = `-- name: DeleteManyParts :exec
@@ -82,23 +67,23 @@ func (q *Queries) DeleteManyParts(ctx context.Context, arg DeleteManyPartsParams
 
 const deletePart = `-- name: DeletePart :exec
 DELETE FROM parts
-WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 
+WHERE (name = $1 AND serial_number = $2 AND parent_id = $3) 
 OR sku = $4
 OR id = $5
 `
 
 type DeletePartParams struct {
-	Name     string
-	PartID   int32
-	ParentID uuid.UUID
-	Sku      sql.NullString
-	ID       uuid.UUID
+	Name         string
+	SerialNumber sql.NullInt32
+	ParentID     uuid.UUID
+	Sku          sql.NullString
+	ID           uuid.UUID
 }
 
 func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 	_, err := q.db.ExecContext(ctx, deletePart,
 		arg.Name,
-		arg.PartID,
+		arg.SerialNumber,
 		arg.ParentID,
 		arg.Sku,
 		arg.ID,
@@ -107,7 +92,7 @@ func (q *Queries) DeletePart(ctx context.Context, arg DeletePartParams) error {
 }
 
 const getPart = `-- name: GetPart :one
-SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts
+SELECT id, serial_number, created_at, updated_at, name, sku, parent_id FROM parts
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
 OR sku = $3
 OR id = $4
@@ -129,8 +114,8 @@ func (q *Queries) GetPart(ctx context.Context, arg GetPartParams) (Part, error) 
 	)
 	var i Part
 	err := row.Scan(
-		&i.PartID,
 		&i.ID,
+		&i.SerialNumber,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
@@ -141,7 +126,7 @@ func (q *Queries) GetPart(ctx context.Context, arg GetPartParams) (Part, error) 
 }
 
 const getPartsByParent = `-- name: GetPartsByParent :many
-SELECT part_id, id, created_at, updated_at, name, sku, parent_id FROM parts 
+SELECT id, serial_number, created_at, updated_at, name, sku, parent_id FROM parts 
 WHERE parent_id = $1
 `
 
@@ -155,8 +140,8 @@ func (q *Queries) GetPartsByParent(ctx context.Context, parentID uuid.UUID) ([]P
 	for rows.Next() {
 		var i Part
 		if err := rows.Scan(
-			&i.PartID,
 			&i.ID,
+			&i.SerialNumber,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
@@ -176,9 +161,10 @@ func (q *Queries) GetPartsByParent(ctx context.Context, parentID uuid.UUID) ([]P
 	return items, nil
 }
 
-const updatePartName = `-- name: UpdatePartName :exec
+const updatePartName = `-- name: UpdatePartName :one
 UPDATE parts SET name = $2, updated_at = NOW()
 WHERE id = $1
+RETURNING id, serial_number, created_at, updated_at, name, sku, parent_id
 `
 
 type UpdatePartNameParams struct {
@@ -186,9 +172,19 @@ type UpdatePartNameParams struct {
 	Name string
 }
 
-func (q *Queries) UpdatePartName(ctx context.Context, arg UpdatePartNameParams) error {
-	_, err := q.db.ExecContext(ctx, updatePartName, arg.ID, arg.Name)
-	return err
+func (q *Queries) UpdatePartName(ctx context.Context, arg UpdatePartNameParams) (Part, error) {
+	row := q.db.QueryRowContext(ctx, updatePartName, arg.ID, arg.Name)
+	var i Part
+	err := row.Scan(
+		&i.ID,
+		&i.SerialNumber,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Sku,
+		&i.ParentID,
+	)
+	return i, err
 }
 
 const updatePartParent = `-- name: UpdatePartParent :exec
@@ -203,5 +199,20 @@ type UpdatePartParentParams struct {
 
 func (q *Queries) UpdatePartParent(ctx context.Context, arg UpdatePartParentParams) error {
 	_, err := q.db.ExecContext(ctx, updatePartParent, arg.ID, arg.ParentID)
+	return err
+}
+
+const updatePartSku = `-- name: UpdatePartSku :exec
+UPDATE parts SET sku = $2
+WHERE id = $1
+`
+
+type UpdatePartSkuParams struct {
+	ID  uuid.UUID
+	Sku sql.NullString
+}
+
+func (q *Queries) UpdatePartSku(ctx context.Context, arg UpdatePartSkuParams) error {
+	_, err := q.db.ExecContext(ctx, updatePartSku, arg.ID, arg.Sku)
 	return err
 }

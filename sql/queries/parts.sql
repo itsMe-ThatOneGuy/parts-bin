@@ -9,9 +9,9 @@ VALUES (
 )
 RETURNING *;
 
--- name: CreateSku :exec
+-- name: UpdatePartSku :exec
 UPDATE parts SET sku = $2
-WHERE part_id = $1;
+WHERE id = $1;
 
 -- name: GetPartsByParent :many
 SELECT * FROM parts 
@@ -19,7 +19,7 @@ WHERE parent_id = $1;
 
 -- name: DeletePart :exec
 DELETE FROM parts
-WHERE (name = $1 AND part_id = $2 AND parent_id = $3) 
+WHERE (name = $1 AND serial_number = $2 AND parent_id = $3) 
 OR sku = $4
 OR id = $5;
 
@@ -42,6 +42,7 @@ OR id = $4;
 UPDATE parts SET parent_id = $2, updated_at = NOW()
 WHERE id = $1;
 
--- name: UpdatePartName :exec
+-- name: UpdatePartName :one
 UPDATE parts SET name = $2, updated_at = NOW()
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
