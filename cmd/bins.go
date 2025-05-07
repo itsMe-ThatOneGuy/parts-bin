@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -47,6 +48,13 @@ func CreateBin(s *state.State, flags map[string]string, args []string) error {
 					return fmt.Errorf("issue creating bin '%s': %v", e, err)
 				}
 
+				abbrevName := utils.AbbrevName(newBin.Name)
+				binSku := fmt.Sprintf("%s-%04d", abbrevName, newBin.SerialNumber.Int32)
+				err = s.DBQueries.UpdateBinSku(context.Background(), database.UpdateBinSkuParams{
+					ID:  newBin.ID,
+					Sku: sql.NullString{Valid: true, String: binSku},
+				})
+
 				parentID = uuid.NullUUID{Valid: true, UUID: newBin.ID}
 
 				if v {
@@ -73,6 +81,13 @@ func CreateBin(s *state.State, flags map[string]string, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	abbrevName := utils.AbbrevName(last)
+	binSku := fmt.Sprintf("%s-%04d", abbrevName, bin.SerialNumber.Int32)
+	err = s.DBQueries.UpdateBinSku(context.Background(), database.UpdateBinSkuParams{
+		ID:  bin.ID,
+		Sku: sql.NullString{Valid: true, String: binSku},
+	})
 
 	if v {
 		fmt.Printf("bin: created bin '%s'\n", bin.Name)
