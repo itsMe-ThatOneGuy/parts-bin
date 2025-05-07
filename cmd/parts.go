@@ -44,9 +44,10 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 				return err
 			}
 
-			partSku := fmt.Sprintf("%s-%d", part.Name, part.PartID)
-			err = s.DBQueries.CreateSku(context.Background(), database.CreateSkuParams{
-				PartID: part.PartID,
+			abbrevName := utils.AbbrevName(part.Name)
+			partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
+			err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
+				ID: part.ID,
 				Sku: sql.NullString{
 					String: partSku,
 					Valid:  true,
@@ -70,10 +71,9 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	abbrevName := utils.AbbrevName(part.Name)
-
-	partSku := fmt.Sprintf("%s-%04d", abbrevName, part.PartID)
-	err = s.DBQueries.CreateSku(context.Background(), database.CreateSkuParams{
-		PartID: part.PartID,
+	partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
+	err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
+		ID: part.ID,
 		Sku: sql.NullString{
 			String: partSku,
 			Valid:  true,
