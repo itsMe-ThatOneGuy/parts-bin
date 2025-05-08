@@ -75,16 +75,23 @@ const getBin = `-- name: GetBin :one
 SELECT id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null FROM bins
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
 OR id = $3
+OR sku = $4
 `
 
 type GetBinParams struct {
 	Name     string
 	ParentID uuid.NullUUID
 	ID       uuid.UUID
+	Sku      sql.NullString
 }
 
 func (q *Queries) GetBin(ctx context.Context, arg GetBinParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, getBin, arg.Name, arg.ParentID, arg.ID)
+	row := q.db.QueryRowContext(ctx, getBin,
+		arg.Name,
+		arg.ParentID,
+		arg.ID,
+		arg.Sku,
+	)
 	var i Bin
 	err := row.Scan(
 		&i.ID,

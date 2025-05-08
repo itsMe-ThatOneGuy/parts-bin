@@ -19,7 +19,8 @@ DELETE FROM bins;
 -- name: GetBin :one
 SELECT * FROM bins
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
-OR id = $3;
+OR id = $3
+OR sku = $4;
 
 -- name: GetBinsByParent :many
 SELECT * FROM bins
