@@ -61,6 +61,7 @@ func ValidateFlags(flags map[string]string, key string) (bool, string) {
 func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	pathLen := len(path)
 	parentID := uuid.NullUUID{Valid: false}
+	parentName := ""
 
 	for i, e := range path {
 		isLast := i == pathLen-1
@@ -80,25 +81,27 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 				})
 				if err == nil {
 					last := models.Element{
-						Type:      "part",
-						Name:      part.Name,
-						Sku:       part.Sku.String,
-						ID:        uuid.NullUUID{Valid: true, UUID: part.ID},
-						CreatedAt: part.CreatedAt.Format("01-02-2006 3:4PM"),
-						UpdatedAt: part.UpdatedAt.Format("01-02-2006 3:4PM"),
-						ParentID:  parentID,
-						Path:      strings.Join(path[:], "/"),
+						Type:       "part",
+						Name:       part.Name,
+						Sku:        part.Sku.String,
+						ID:         uuid.NullUUID{Valid: true, UUID: part.ID},
+						CreatedAt:  part.CreatedAt.Format("01-02-2006 3:4PM"),
+						UpdatedAt:  part.UpdatedAt.Format("01-02-2006 3:4PM"),
+						ParentID:   parentID,
+						ParentName: parentName,
+						Path:       strings.Join(path[:], "/"),
 					}
 
 					return last, nil
 				}
 
 				last := models.Element{
-					Type:     "unknown",
-					Name:     e,
-					ID:       uuid.NullUUID{Valid: false},
-					ParentID: parentID,
-					Path:     strings.Join(path[:], "/"),
+					Type:       "unknown",
+					Name:       e,
+					ID:         uuid.NullUUID{Valid: false},
+					ParentID:   parentID,
+					ParentName: parentName,
+					Path:       strings.Join(path[:], "/"),
 				}
 
 				return last, nil
@@ -109,14 +112,15 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 
 		if isLast {
 			last := models.Element{
-				Type:      "bin",
-				Name:      e,
-				Sku:       bin.Sku.String,
-				ID:        uuid.NullUUID{Valid: true, UUID: bin.ID},
-				ParentID:  parentID,
-				CreatedAt: bin.CreatedAt.Format("01-02-2006 3:4PM"),
-				UpdatedAt: bin.UpdatedAt.Format("01-02-2006 3:4PM"),
-				Path:      strings.Join(path[:], "/"),
+				Type:       "bin",
+				Name:       e,
+				Sku:        bin.Sku.String,
+				ID:         uuid.NullUUID{Valid: true, UUID: bin.ID},
+				ParentID:   parentID,
+				ParentName: parentName,
+				CreatedAt:  bin.CreatedAt.Format("01-02-2006 3:4PM"),
+				UpdatedAt:  bin.UpdatedAt.Format("01-02-2006 3:4PM"),
+				Path:       strings.Join(path[:], "/"),
 			}
 
 			return last, nil
@@ -124,6 +128,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 		}
 
 		parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+		parentName = e
 	}
 
 	return models.Element{}, nil
