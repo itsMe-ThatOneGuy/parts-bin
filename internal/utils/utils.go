@@ -76,8 +76,8 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 				Sku:       part.Sku.String,
 				ID:        uuid.NullUUID{Valid: true, UUID: part.ID},
 				ParentID:  uuid.NullUUID{Valid: true, UUID: part.ParentID},
-				CreatedAt: part.CreatedAt.String(),
-				UpdatedAt: part.UpdatedAt.String(),
+				CreatedAt: part.CreatedAt.Format("01-02-2006 3:4PM"),
+				UpdatedAt: part.UpdatedAt.Format("01-02-2006 3:4PM"),
 			}
 
 			return last, nil
@@ -104,8 +104,8 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 						Name:      part.Name,
 						Sku:       part.Sku.String,
 						ID:        uuid.NullUUID{Valid: true, UUID: part.ID},
-						CreatedAt: part.CreatedAt.String(),
-						UpdatedAt: part.UpdatedAt.String(),
+						CreatedAt: part.CreatedAt.Format("01-02-2006 3:4PM"),
+						UpdatedAt: part.UpdatedAt.Format("01-02-2006 3:4PM"),
 						ParentID:  parentID,
 						Path:      strings.Join(path[:], "/"),
 					}
@@ -133,8 +133,8 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 				Name:      e,
 				ID:        uuid.NullUUID{Valid: true, UUID: bin.ID},
 				ParentID:  parentID,
-				CreatedAt: bin.CreatedAt.String(),
-				UpdatedAt: bin.UpdatedAt.String(),
+				CreatedAt: bin.CreatedAt.Format("01-02-2006 3:4PM"),
+				UpdatedAt: bin.UpdatedAt.Format("01-02-2006 3:4PM"),
 				Path:      strings.Join(path[:], "/"),
 			}
 
