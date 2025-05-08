@@ -60,42 +60,22 @@ func ValidateFlags(flags map[string]string, key string) (bool, string) {
 
 func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	pathLen := len(path)
-
-	if pathLen == 1 {
-		sku := path[0]
-		part, err := s.DBQueries.GetPart(context.Background(), database.GetPartParams{
-			Sku: sql.NullString{
-				String: sku,
-				Valid:  true,
-			},
-		})
-		if err == nil {
-			last := models.Element{
-				Type:      "part",
-				Name:      part.Name,
-				Sku:       part.Sku.String,
-				ID:        uuid.NullUUID{Valid: true, UUID: part.ID},
-				ParentID:  uuid.NullUUID{Valid: true, UUID: part.ParentID},
-				CreatedAt: part.CreatedAt.Format("01-02-2006 3:4PM"),
-				UpdatedAt: part.UpdatedAt.Format("01-02-2006 3:4PM"),
-			}
-
-			return last, nil
-		}
-	}
-
 	parentID := uuid.NullUUID{Valid: false}
+
 	for i, e := range path {
 		isLast := i == pathLen-1
+		nrmSku := sql.NullString{Valid: true, String: strings.ToUpper(e)}
 
 		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
 			Name:     e,
+			Sku:      nrmSku,
 			ParentID: parentID,
 		})
 		if err != nil {
 			if isLast {
 				part, err := s.DBQueries.GetPart(context.Background(), database.GetPartParams{
 					Name:     e,
+					Sku:      nrmSku,
 					ParentID: parentID.UUID,
 				})
 				if err == nil {
@@ -131,6 +111,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 			last := models.Element{
 				Type:      "bin",
 				Name:      e,
+				Sku:       bin.Sku.String,
 				ID:        uuid.NullUUID{Valid: true, UUID: bin.ID},
 				ParentID:  parentID,
 				CreatedAt: bin.CreatedAt.Format("01-02-2006 3:4PM"),
