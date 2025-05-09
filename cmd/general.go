@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
@@ -293,16 +294,25 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	if lastElem.Type == "unknown" {
-		return errors.New("not a valid bin")
+		return errors.New("not a valid path")
 	}
 
+	lastElemLongStr := ""
+	if lastElem.ParentName == "" {
+		lastElemLongStr += fmt.Sprintf("root/\n")
+	} else {
+		lastElemLongStr += fmt.Sprintf("%s/\n", lastElem.ParentName)
+	}
+	lastElemLongStr += fmt.Sprintf("|- %s\n", lastElem.Name)
+	lastElemLongStr += fmt.Sprintf("    - Sku:\t\t %s\n", lastElem.Sku)
+	lastElemLongStr += fmt.Sprintf("    - ID:\t\t %v\n", lastElem.ID.UUID)
+	lastElemLongStr += fmt.Sprintf("    - Created:\t\t %s\n", lastElem.CreatedAt)
+	lastElemLongStr += fmt.Sprintf("    - Last updated:\t %s\n", lastElem.CreatedAt)
+	lastElemLongStr += fmt.Sprintf("    - Type:\t\t %s\n", strings.ToUpper(lastElem.Type))
+	lastElemLongStr += fmt.Sprintf("    - Path:\t\t %s\n", lastElem.Path)
+
 	if lastElem.Type == "part" {
-		fmt.Printf("%s\n", lastElem.Name)
-		fmt.Printf("- Sku:\t\t %s\n", lastElem.Sku)
-		fmt.Printf("- ID:\t\t %v\n", lastElem.ID.UUID)
-		fmt.Printf("- Created:\t %s\n", lastElem.CreatedAt)
-		fmt.Printf("- Last Update:\t %s\n", lastElem.UpdatedAt)
-		fmt.Print("\n")
+		fmt.Println(lastElemLongStr)
 		return nil
 	}
 
@@ -316,17 +326,18 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 		return err
 	}
 
-	var binString string
+	binString := ""
 	for i, e := range bins {
 		if l {
-			binString += fmt.Sprintf("%s\n", e.Name)
-			binString += fmt.Sprintf("- ID:\t\t %s\n", e.ID)
-			binString += fmt.Sprintf("- Created:\t %s\n", e.CreatedAt)
-			binString += fmt.Sprintf("- Last Update:\t %s\n", e.UpdatedAt)
-			binString += fmt.Sprint("\n")
-
+			binString += fmt.Sprintf("   |- %s\n", e.Name)
+			binString += fmt.Sprintf("       - Sku:\t\t %s\n", e.Sku.String)
+			binString += fmt.Sprintf("       - ID:\t\t %v\n", e.ID)
+			binString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt)
+			binString += fmt.Sprintf("       - Last updated:\t %s\n", e.CreatedAt)
+			binString += fmt.Sprintf("       - Type:\t\t PART\n")
+			binString += fmt.Sprintf("       - Path:\t\t %s/%s\n", lastElem.Path, e.Name)
 		} else {
-			binString += fmt.Sprintf("%s\t", e.Name)
+			binString += fmt.Sprintf("    %s ", e.Name)
 			if i%5 == 4 {
 				binString += "\n"
 			}
@@ -334,17 +345,18 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 
 	}
 
-	var partString string
+	partString := ""
 	for i, e := range parts {
 		if l {
-			partString += fmt.Sprintf("%s\n", e.Name)
-			partString += fmt.Sprintf("- Sku:\t\t %s\n", e.Sku.String)
-			partString += fmt.Sprintf("- ID:\t\t %s\n", e.ID)
-			partString += fmt.Sprintf("- Created:\t %s\n", e.CreatedAt)
-			partString += fmt.Sprintf("- Last Update:\t %s\n", e.UpdatedAt)
-			partString += fmt.Sprint("\n")
+			partString += fmt.Sprintf("   |- %s\n", e.Name)
+			partString += fmt.Sprintf("       - Sku:\t\t %s\n", e.Sku.String)
+			partString += fmt.Sprintf("       - ID:\t\t %v\n", e.ID)
+			partString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt)
+			partString += fmt.Sprintf("       - Last updated:\t %s\n", e.CreatedAt)
+			partString += fmt.Sprintf("       - Type:\t\t PART\n")
+			partString += fmt.Sprintf("       - Path:\t\t %s/%s\n", lastElem.Path, e.Name)
 		} else {
-			partString += fmt.Sprintf("%s\t", e.Name)
+			partString += fmt.Sprintf("    %s", e.Name)
 			if i%5 == 4 {
 				partString += "\n"
 			}
@@ -352,32 +364,38 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 
 	}
 
-	if len(srcSlice) > 0 {
-		fmt.Printf("Bin(s): %d Part(s): %d\n", len(bins), len(parts))
+	normalStr := ""
+	if l {
+		normalStr += fmt.Sprintf("\033[4m/%s\033[0m\n", lastElem.Name)
+		normalStr += fmt.Sprintf(" - Sku:\t\t   %s\n", lastElem.Sku)
+		normalStr += fmt.Sprintf(" - ID:\t\t   %v\n", lastElem.ID.UUID)
+		normalStr += fmt.Sprintf(" - Created:\t   %s\n", lastElem.CreatedAt)
+		normalStr += fmt.Sprintf(" - Last updated:   %s\n", lastElem.CreatedAt)
+		normalStr += fmt.Sprintf(" - Type:\t   %s\n", strings.ToUpper(lastElem.Type))
+		normalStr += fmt.Sprintf(" - Path:\t   %s\n", lastElem.Path)
+		if len(binString) > 0 || len(partString) > 0 {
+			normalStr += "\n"
+		}
 	} else {
-		fmt.Printf("Bin(s): %d\n", len(bins))
+		if lastElem.Path == "" {
+			normalStr += fmt.Sprintf("\033[4mroot/\033[0m\n")
+		} else {
+			normalStr += fmt.Sprintf("\033[4m/%s\033[0m\n", lastElem.Name)
+		}
 	}
 
-	if len(bins) > 0 {
-		fmt.Println("----------")
-		fmt.Println("Bins:")
-		fmt.Println("----------")
-		if l {
-			fmt.Printf("Total: %d\n", len(bins))
-			fmt.Println()
-		}
-		fmt.Println(binString)
+	if len(binString) > 0 {
+		normalStr += fmt.Sprintf(" |-\033[4mBins(s)\033[0m\n")
+		normalStr += binString
+		normalStr += "\n"
 	}
-	if len(parts) > 0 {
-		fmt.Println("----------")
-		fmt.Println("Parts:")
-		fmt.Println("----------")
-		if l {
-			fmt.Printf("Total: %d\n", len(parts))
-			fmt.Println()
-		}
-		fmt.Println(partString)
+	if len(partString) > 0 {
+		normalStr += fmt.Sprintf(" |-\033[4mParts(s)\033[0m\n")
+		normalStr += partString
 	}
+
+	fmt.Println(normalStr)
+	fmt.Printf("Bin(s): %d Part(s): %d\n", len(bins), len(parts))
 
 	return nil
 }
