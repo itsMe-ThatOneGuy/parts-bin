@@ -89,7 +89,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 						UpdatedAt:  part.UpdatedAt.Format("01-02-2006 3:4PM"),
 						ParentID:   parentID,
 						ParentName: parentName,
-						Path:       strings.Join(path[:], "/"),
+						Path:       "/" + strings.Join(path[:], "/"),
 					}
 
 					return last, nil
@@ -101,7 +101,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 					ID:         uuid.NullUUID{Valid: false},
 					ParentID:   parentID,
 					ParentName: parentName,
-					Path:       strings.Join(path[:], "/"),
+					Path:       "/" + strings.Join(path[:], "/"),
 				}
 
 				return last, nil
@@ -120,7 +120,7 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 				ParentName: parentName,
 				CreatedAt:  bin.CreatedAt.Format("01-02-2006 3:4PM"),
 				UpdatedAt:  bin.UpdatedAt.Format("01-02-2006 3:4PM"),
-				Path:       strings.Join(path[:], "/"),
+				Path:       "/" + strings.Join(path[:], "/"),
 			}
 
 			return last, nil
