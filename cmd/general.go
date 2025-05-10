@@ -332,8 +332,8 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 			binString += fmt.Sprintf("   |- %s\n", e.Name)
 			binString += fmt.Sprintf("       - Sku:\t\t %s\n", e.Sku.String)
 			binString += fmt.Sprintf("       - ID:\t\t %v\n", e.ID)
-			binString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt)
-			binString += fmt.Sprintf("       - Last updated:\t %s\n", e.CreatedAt)
+			binString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt.Format("01-02-2006 3:4PM"))
+			binString += fmt.Sprintf("       - Last updated:\t %s\n", e.UpdatedAt.Format("01-02-2006 3:4PM"))
 			binString += fmt.Sprintf("       - Type:\t\t PART\n")
 			binString += fmt.Sprintf("       - Path:\t\t %s/%s\n", lastElem.Path, e.Name)
 		} else {
@@ -351,8 +351,8 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 			partString += fmt.Sprintf("   |- %s\n", e.Name)
 			partString += fmt.Sprintf("       - Sku:\t\t %s\n", e.Sku.String)
 			partString += fmt.Sprintf("       - ID:\t\t %v\n", e.ID)
-			partString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt)
-			partString += fmt.Sprintf("       - Last updated:\t %s\n", e.CreatedAt)
+			partString += fmt.Sprintf("       - Created:\t %s\n", e.CreatedAt.Format("01-02-2006 3:4PM"))
+			partString += fmt.Sprintf("       - Last updated:\t %s\n", e.UpdatedAt.Format("01-02-2006 3:4PM"))
 			partString += fmt.Sprintf("       - Type:\t\t PART\n")
 			partString += fmt.Sprintf("       - Path:\t\t %s/%s\n", lastElem.Path, e.Name)
 		} else {
