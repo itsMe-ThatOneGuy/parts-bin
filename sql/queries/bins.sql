@@ -9,13 +9,6 @@ VALUES (
 )
 RETURNING *;
 
--- name: UpdateBinSku :exec
-UPDATE bins SET sku = $2
-WHERE id = $1;
-
--- name: DeleteAllBins :exec
-DELETE FROM bins;
-
 -- name: GetBin :one
 SELECT * FROM bins
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
@@ -25,11 +18,6 @@ OR sku = $4;
 -- name: GetBinsByParent :many
 SELECT * FROM bins
 WHERE (parent_id = $1 OR (parent_id IS NULL AND $1 IS NULL));
-
--- name: DeleteBin :exec
-DELETE FROM bins
-WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
-OR id = $3;
 
 -- name: UpdateBinName :one
 UPDATE bins SET name = $3, updated_at = NOW()
@@ -41,3 +29,13 @@ RETURNING *;
 UPDATE bins SET parent_id = $3, updated_at = NOW()
 WHERE name = $1
 AND (parent_id IS NOT DISTINCT FROM $2);
+
+-- name: UpdateBinSku :exec
+UPDATE bins SET sku = $2
+WHERE id = $1;
+
+-- name: DeleteBin :exec
+DELETE FROM bins
+WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
+OR id = $3;
+
