@@ -134,15 +134,15 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	return models.Element{}, nil
 }
 
-func GetChildBins(s *state.State, path string, parentID uuid.NullUUID) ([]models.Bin, error) {
+func GetChildBins(s *state.State, path string, parentID uuid.NullUUID) ([]models.Element, error) {
 	bins, err := s.DBQueries.GetBinsByParent(context.Background(), parentID)
 	if err != nil {
 		return nil, err
 	}
 
-	binList := make([]models.Bin, len(bins))
+	binList := make([]models.Element, len(bins))
 	for i, e := range bins {
-		binList[i] = models.Bin{
+		binList[i] = models.Element{
 			Name:     e.Name,
 			ID:       uuid.NullUUID{Valid: true, UUID: e.ID},
 			ParentID: e.ParentID,
@@ -153,7 +153,7 @@ func GetChildBins(s *state.State, path string, parentID uuid.NullUUID) ([]models
 	return binList, nil
 }
 
-func QueueBins(s *state.State, path string, parentID uuid.NullUUID, queue *[]models.Bin) error {
+func QueueBins(s *state.State, path string, parentID uuid.NullUUID, queue *[]models.Element) error {
 	bins, err := GetChildBins(s, path, parentID)
 	if err != nil {
 		return err

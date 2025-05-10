@@ -78,20 +78,20 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 		return nil
 	}
 
-	thisBin := models.Bin{
+	thisBin := models.Element{
 		Name:     lastElem.Name,
 		ID:       lastElem.ID,
 		ParentID: lastElem.ParentID,
 		Path:     lastElem.Path,
 	}
 
-	var queue []models.Bin
+	var queue []models.Element
 
 	if err := utils.QueueBins(s, path, lastElem.ID, &queue); err != nil {
 		return err
 	}
 
-	queue = append([]models.Bin{thisBin}, queue...)
+	queue = append([]models.Element{thisBin}, queue...)
 	slices.Reverse(queue)
 
 	if r {
