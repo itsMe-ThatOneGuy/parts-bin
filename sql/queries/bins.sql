@@ -20,15 +20,13 @@ SELECT * FROM bins
 WHERE (parent_id = $1 OR (parent_id IS NULL AND $1 IS NULL));
 
 -- name: UpdateBinName :one
-UPDATE bins SET name = $3, updated_at = NOW()
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+UPDATE bins SET name = $2, updated_at = NOW()
+WHERE id = $1
 RETURNING *;
 
 -- name: UpdateBinParent :exec
-UPDATE bins SET parent_id = $3, updated_at = NOW()
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2);
+UPDATE bins SET parent_id = $2, updated_at = NOW()
+WHERE id = $1;
 
 -- name: UpdateBinSku :exec
 UPDATE bins SET sku = $2
