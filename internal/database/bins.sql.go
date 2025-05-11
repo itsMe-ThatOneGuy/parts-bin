@@ -45,15 +45,6 @@ func (q *Queries) CreateBin(ctx context.Context, arg CreateBinParams) (Bin, erro
 	return i, err
 }
 
-const deleteAllBins = `-- name: DeleteAllBins :exec
-DELETE FROM bins
-`
-
-func (q *Queries) DeleteAllBins(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteAllBins)
-	return err
-}
-
 const deleteBin = `-- name: DeleteBin :exec
 DELETE FROM bins
 WHERE (name = $1 AND (parent_id IS NOT DISTINCT FROM $2))
@@ -144,20 +135,18 @@ func (q *Queries) GetBinsByParent(ctx context.Context, parentID uuid.NullUUID) (
 }
 
 const updateBinName = `-- name: UpdateBinName :one
-UPDATE bins SET name = $3, updated_at = NOW()
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+UPDATE bins SET name = $2, updated_at = NOW()
+WHERE id = $1
 RETURNING id, serial_number, created_at, updated_at, name, sku, parent_id, parent_id_or_null
 `
 
 type UpdateBinNameParams struct {
-	Name     string
-	ParentID uuid.NullUUID
-	Name_2   string
+	ID   uuid.UUID
+	Name string
 }
 
 func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (Bin, error) {
-	row := q.db.QueryRowContext(ctx, updateBinName, arg.Name, arg.ParentID, arg.Name_2)
+	row := q.db.QueryRowContext(ctx, updateBinName, arg.ID, arg.Name)
 	var i Bin
 	err := row.Scan(
 		&i.ID,
@@ -173,19 +162,17 @@ func (q *Queries) UpdateBinName(ctx context.Context, arg UpdateBinNameParams) (B
 }
 
 const updateBinParent = `-- name: UpdateBinParent :exec
-UPDATE bins SET parent_id = $3, updated_at = NOW()
-WHERE name = $1
-AND (parent_id IS NOT DISTINCT FROM $2)
+UPDATE bins SET parent_id = $2, updated_at = NOW()
+WHERE id = $1
 `
 
 type UpdateBinParentParams struct {
-	Name       string
-	ParentID   uuid.NullUUID
-	ParentID_2 uuid.NullUUID
+	ID       uuid.UUID
+	ParentID uuid.NullUUID
 }
 
 func (q *Queries) UpdateBinParent(ctx context.Context, arg UpdateBinParentParams) error {
-	_, err := q.db.ExecContext(ctx, updateBinParent, arg.Name, arg.ParentID, arg.ParentID_2)
+	_, err := q.db.ExecContext(ctx, updateBinParent, arg.ID, arg.ParentID)
 	return err
 }
 
