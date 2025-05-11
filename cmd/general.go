@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"slices"
@@ -10,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/helptxt"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/repository"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
 )
@@ -55,18 +53,19 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 				return err
 			}
 
-			err = s.DBQueries.DeleteManyParts(context.Background(), database.DeleteManyPartsParams{
-				Name:     lastElem.Name,
-				ParentID: lastElem.ParentID.UUID,
-				Limit:    int32(num),
-			})
+			err = repository.DeleteManyParts(s, num, lastElem)
+			if err != nil {
+				return err
+			}
+
+			if v {
+				fmt.Printf("removed %d parts: '%s'\n", num, path)
+			}
 
 			return nil
 		}
 
-		err := s.DBQueries.DeletePart(context.Background(), database.DeletePartParams{
-			ID: lastElem.ID.UUID,
-		})
+		err := repository.DeletePart(s, lastElem)
 		if err != nil {
 			return nil
 		}
@@ -97,7 +96,11 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 	if r {
 		for _, e := range queue {
 			if v {
-				parts, _ := s.DBQueries.GetPartsByParent(context.Background(), e.ID.UUID)
+				parts, err := repository.GetPartsByParent(s, e)
+				if err != nil {
+					return err
+				}
+
 				if len(parts) >= 1 {
 					for _, part := range parts {
 						partName := e.Path + "/" + part.Name
@@ -107,9 +110,7 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 				fmt.Printf("removed bin: '%s'\n", e.Path)
 			}
 
-			err := s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-				ID: e.ID.UUID,
-			})
+			err := repository.DeleteBin(s, e)
 			if err != nil {
 				return err
 			}
@@ -123,7 +124,7 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 		return fmt.Errorf("failed to remove '%s': Bin is not empty", thisBin.Name)
 	}
 
-	parts, err := s.DBQueries.GetPartsByParent(context.Background(), queue[0].ID.UUID)
+	parts, err := repository.GetPartsByParent(s, queue[0])
 	if err != nil {
 		return err
 	}
@@ -132,9 +133,7 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 		return fmt.Errorf("failed to remove '%s': Bin is not empty", thisBin.Name)
 	}
 
-	err = s.DBQueries.DeleteBin(context.Background(), database.DeleteBinParams{
-		ID: lastElem.ID.UUID,
-	})
+	err = repository.DeleteBin(s, lastElem)
 	if err != nil {
 		return err
 	}
@@ -146,6 +145,7 @@ func Rm(s *state.State, flags map[string]string, args []string) error {
 	return nil
 }
 
+// needs more debugging
 func Mv(s *state.State, flags map[string]string, args []string) error {
 	v, _ := utils.ValidateFlags(flags, "v")
 	h, _ := utils.ValidateFlags(flags, "h")
@@ -162,12 +162,16 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 
 	srcElement, err := utils.GetLastElement(s, srcSlice)
 	if err != nil {
-		return fmt.Errorf("source path not found: %w", err)
+		return err
+	}
+
+	if srcElement.Type == "unknown" {
+		return fmt.Errorf("source path not found")
 	}
 
 	destElement, err := utils.GetLastElement(s, destSlice)
 	if err != nil {
-		return fmt.Errorf("source path not found: %w", err)
+		return err
 	}
 
 	if srcElement.Type == "bin" && destElement.Type == "part" {
@@ -198,42 +202,32 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 
 	if elementName != srcElement.Name {
 		if srcElement.Type == "part" {
-			part, err := s.DBQueries.UpdatePartName(context.Background(), database.UpdatePartNameParams{
-				ID:   srcElement.ID.UUID,
-				Name: elementName,
-			})
+			part, err := repository.UpdatePartName(s, elementName, srcElement)
 			if err != nil {
 				return err
 			}
 
-			abbrevName := utils.AbbrevName(part.Name)
+			abbrevName := utils.AbbrevName(elementName)
 			partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
-			err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
-				ID: part.ID,
-				Sku: sql.NullString{
-					String: partSku,
-					Valid:  true,
-				},
-			})
+			err = repository.UpdatePartSku(s, partSku, srcElement)
+			if err != nil {
+				return err
+			}
 
 		}
 
 		if srcElement.Type == "bin" {
-			bin, err := s.DBQueries.UpdateBinName(context.Background(), database.UpdateBinNameParams{
-				Name:     srcElement.Name,
-				ParentID: srcElement.ParentID,
-				Name_2:   elementName,
-			})
+			bin, err := repository.UpdateBinName(s, elementName, srcElement)
 			if err != nil {
 				return err
 			}
 
 			abbrevName := utils.AbbrevName(bin.Name)
 			binSku := fmt.Sprintf("%s-%04d", abbrevName, bin.SerialNumber.Int32)
-			err = s.DBQueries.UpdateBinSku(context.Background(), database.UpdateBinSkuParams{
-				ID:  bin.ID,
-				Sku: sql.NullString{Valid: true, String: binSku},
-			})
+			err = repository.UpdateBinSku(s, binSku, srcElement)
+			if err != nil {
+				return err
+			}
 
 		}
 	}
@@ -245,21 +239,14 @@ func Mv(s *state.State, flags map[string]string, args []string) error {
 			}
 
 			if srcElement.Type == "part" {
-				err := s.DBQueries.UpdatePartParent(context.Background(), database.UpdatePartParentParams{
-					ID:       srcElement.ID.UUID,
-					ParentID: elementParentID.UUID,
-				})
+				err := repository.UpdatePartParent(s, elementParentID, srcElement)
 				if err != nil {
 					return err
 				}
 			}
 
 			if srcElement.Type == "bin" {
-				err := s.DBQueries.UpdateBinParent(context.Background(), database.UpdateBinParentParams{
-					Name:       elementName,
-					ParentID:   srcElement.ParentID,
-					ParentID_2: elementParentID,
-				})
+				err := repository.UpdateBinParent(s, elementParentID, srcElement)
 				if err != nil {
 					return err
 				}
@@ -316,12 +303,12 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 		return nil
 	}
 
-	bins, err := s.DBQueries.GetBinsByParent(context.Background(), lastElem.ID)
+	bins, err := repository.GetBinsByParent(s, lastElem)
 	if err != nil {
 		return err
 	}
 
-	parts, err := s.DBQueries.GetPartsByParent(context.Background(), lastElem.ID.UUID)
+	parts, err := repository.GetPartsByParent(s, lastElem)
 	if err != nil {
 		return err
 	}
@@ -366,15 +353,19 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 
 	normalStr := ""
 	if l {
-		normalStr += fmt.Sprintf("\033[4m/%s\033[0m\n", lastElem.Name)
-		normalStr += fmt.Sprintf(" - Sku:\t\t   %s\n", lastElem.Sku)
-		normalStr += fmt.Sprintf(" - ID:\t\t   %v\n", lastElem.ID.UUID)
-		normalStr += fmt.Sprintf(" - Created:\t   %s\n", lastElem.CreatedAt)
-		normalStr += fmt.Sprintf(" - Last updated:   %s\n", lastElem.CreatedAt)
-		normalStr += fmt.Sprintf(" - Type:\t   %s\n", strings.ToUpper(lastElem.Type))
-		normalStr += fmt.Sprintf(" - Path:\t   %s\n", lastElem.Path)
-		if len(binString) > 0 || len(partString) > 0 {
-			normalStr += "\n"
+		if lastElem.Path == "" {
+			normalStr += fmt.Sprintf("\033[4mroot/\033[0m\n")
+		} else {
+			normalStr += fmt.Sprintf("\033[4m/%s\033[0m\n", lastElem.Name)
+			normalStr += fmt.Sprintf(" - Sku:\t\t   %s\n", lastElem.Sku)
+			normalStr += fmt.Sprintf(" - ID:\t\t   %v\n", lastElem.ID.UUID)
+			normalStr += fmt.Sprintf(" - Created:\t   %s\n", lastElem.CreatedAt)
+			normalStr += fmt.Sprintf(" - Last updated:   %s\n", lastElem.CreatedAt)
+			normalStr += fmt.Sprintf(" - Type:\t   %s\n", strings.ToUpper(lastElem.Type))
+			normalStr += fmt.Sprintf(" - Path:\t   %s\n", lastElem.Path)
+			if len(binString) > 0 || len(partString) > 0 {
+				normalStr += "\n"
+			}
 		}
 	} else {
 		if lastElem.Path == "" {
@@ -395,7 +386,12 @@ func Ls(s *state.State, flags map[string]string, args []string) error {
 	}
 
 	fmt.Println(normalStr)
-	fmt.Printf("Bin(s): %d Part(s): %d\n", len(bins), len(parts))
+
+	if lastElem.Path == "" {
+		fmt.Printf("Bin(s): %d\n", len(bins))
+	} else {
+		fmt.Printf("Bin(s): %d Part(s): %d\n", len(bins), len(parts))
+	}
 
 	return nil
 }

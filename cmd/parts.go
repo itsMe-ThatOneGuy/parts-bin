@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
+	"github.com/google/uuid"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/helptxt"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/repository"
 
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/utils"
@@ -36,23 +36,21 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 		}
 
 		for i := 0; i < int(num); i++ {
-			part, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
-				Name:     last.Name,
-				ParentID: last.ParentID.UUID,
-			})
+			part, err := repository.CreatePart(s, last)
 			if err != nil {
 				return err
 			}
 
+			partElem := models.Element{
+				ID: uuid.NullUUID{Valid: true, UUID: part.ID},
+			}
+
 			abbrevName := utils.AbbrevName(part.Name)
 			partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
-			err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
-				ID: part.ID,
-				Sku: sql.NullString{
-					String: partSku,
-					Valid:  true,
-				},
-			})
+			err = repository.UpdatePartSku(s, partSku, partElem)
+			if err != nil {
+				return err
+			}
 		}
 
 		if v {
@@ -62,23 +60,18 @@ func CreatePart(s *state.State, flags map[string]string, args []string) error {
 		return nil
 	}
 
-	part, err := s.DBQueries.CreatePart(context.Background(), database.CreatePartParams{
-		Name:     last.Name,
-		ParentID: last.ParentID.UUID,
-	})
+	part, err := repository.CreatePart(s, last)
 	if err != nil {
 		return err
 	}
 
+	partElem := models.Element{
+		ID: uuid.NullUUID{Valid: true, UUID: part.ID},
+	}
+
 	abbrevName := utils.AbbrevName(part.Name)
 	partSku := fmt.Sprintf("%s-%04d", abbrevName, part.SerialNumber.Int32)
-	err = s.DBQueries.UpdatePartSku(context.Background(), database.UpdatePartSkuParams{
-		ID: part.ID,
-		Sku: sql.NullString{
-			String: partSku,
-			Valid:  true,
-		},
-	})
+	err = repository.UpdatePartSku(s, partSku, partElem)
 	if err != nil {
 		return nil
 	}

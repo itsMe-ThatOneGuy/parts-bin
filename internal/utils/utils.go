@@ -1,14 +1,12 @@
 package utils
 
 import (
-	"context"
-	"database/sql"
 	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/itsMe-ThatOneGuy/parts-bin/internal/database"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/models"
+	"github.com/itsMe-ThatOneGuy/parts-bin/internal/repository"
 	"github.com/itsMe-ThatOneGuy/parts-bin/internal/state"
 )
 
@@ -60,49 +58,37 @@ func ValidateFlags(flags map[string]string, key string) (bool, string) {
 
 func GetLastElement(s *state.State, path []string) (models.Element, error) {
 	pathLen := len(path)
-	parentID := uuid.NullUUID{Valid: false}
-	parentName := ""
+
+	last := models.Element{
+		ParentID:   uuid.NullUUID{Valid: false},
+		ParentName: "",
+	}
 
 	for i, e := range path {
 		isLast := i == pathLen-1
-		nrmSku := sql.NullString{Valid: true, String: strings.ToUpper(e)}
+		last.Name = e
+		last.Sku = strings.ToUpper(e)
 
-		bin, err := s.DBQueries.GetBin(context.Background(), database.GetBinParams{
-			Name:     e,
-			Sku:      nrmSku,
-			ParentID: parentID,
-		})
+		bin, err := repository.GetBin(s, last)
 		if err != nil {
 			if isLast {
-				part, err := s.DBQueries.GetPart(context.Background(), database.GetPartParams{
-					Name:     e,
-					Sku:      nrmSku,
-					ParentID: parentID.UUID,
-				})
+				part, err := repository.GetPart(s, last)
 				if err == nil {
-					last := models.Element{
-						Type:       "part",
-						Name:       part.Name,
-						Sku:        part.Sku.String,
-						ID:         uuid.NullUUID{Valid: true, UUID: part.ID},
-						CreatedAt:  part.CreatedAt.Format("01-02-2006 3:4PM"),
-						UpdatedAt:  part.UpdatedAt.Format("01-02-2006 3:4PM"),
-						ParentID:   parentID,
-						ParentName: parentName,
-						Path:       "/" + strings.Join(path[:], "/"),
-					}
+					last.Type = "part"
+					last.Name = part.Name
+					last.Sku = part.Sku.String
+					last.ID = uuid.NullUUID{Valid: true, UUID: part.ID}
+					last.CreatedAt = part.CreatedAt.Format("01-02-2006 3:4PM")
+					last.UpdatedAt = part.UpdatedAt.Format("01-02-2006 3:4PM")
+					last.Path = "/" + strings.Join(path[:], "/")
 
 					return last, nil
 				}
 
-				last := models.Element{
-					Type:       "unknown",
-					Name:       e,
-					ID:         uuid.NullUUID{Valid: false},
-					ParentID:   parentID,
-					ParentName: parentName,
-					Path:       "/" + strings.Join(path[:], "/"),
-				}
+				last.Type = "unknown"
+				last.Name = e
+				last.ID = uuid.NullUUID{Valid: false}
+				last.Path = "/" + strings.Join(path[:], "/")
 
 				return last, nil
 			}
@@ -111,31 +97,31 @@ func GetLastElement(s *state.State, path []string) (models.Element, error) {
 		}
 
 		if isLast {
-			last := models.Element{
-				Type:       "bin",
-				Name:       e,
-				Sku:        bin.Sku.String,
-				ID:         uuid.NullUUID{Valid: true, UUID: bin.ID},
-				ParentID:   parentID,
-				ParentName: parentName,
-				CreatedAt:  bin.CreatedAt.Format("01-02-2006 3:4PM"),
-				UpdatedAt:  bin.UpdatedAt.Format("01-02-2006 3:4PM"),
-				Path:       "/" + strings.Join(path[:], "/"),
-			}
+			last.Type = "bin"
+			last.Name = e
+			last.Sku = bin.Sku.String
+			last.ID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+			last.CreatedAt = bin.CreatedAt.Format("01-02-2006 3:4PM")
+			last.UpdatedAt = bin.UpdatedAt.Format("01-02-2006 3:4PM")
+			last.Path = "/" + strings.Join(path[:], "/")
 
 			return last, nil
 
 		}
 
-		parentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
-		parentName = e
+		last.ParentID = uuid.NullUUID{Valid: true, UUID: bin.ID}
+		last.ParentName = e
 	}
 
 	return models.Element{}, nil
 }
 
 func GetChildBins(s *state.State, path string, parentID uuid.NullUUID) ([]models.Element, error) {
-	bins, err := s.DBQueries.GetBinsByParent(context.Background(), parentID)
+	parentBin := models.Element{
+		ID: parentID,
+	}
+
+	bins, err := repository.GetBinsByParent(s, parentBin)
 	if err != nil {
 		return nil, err
 	}
